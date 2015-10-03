@@ -1,0 +1,45 @@
+{
+  "name": "catbee",
+  "version": "0.0.1",
+  "author": {
+    "name": "Kirill Kaysarov",
+    "email": "k.kaysarov@2gis.ru"
+  },
+  "description": "Catbee - High level framework based on best practices from Catberry, Baobab and Cerebral",
+  "homepage": "https://github.com/markuplab/catbee",
+  "keywords": [
+    "catberry",
+    "state",
+    "immutable",
+    "singals",
+    "isomorphic",
+    "morphdom",
+    "tree"
+  ],
+  "bugs": {
+    "url": "https://github.com/markuplab/catbee/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:markuplab/catbee.git"
+  },
+  "main": "./index",
+  "browser": {
+    "./lib/Bootstrapper.js": "__BrowserBundle.js"
+  },
+  "dependencies": {
+    "catberry-locator": "^1.1.7",
+    "catberry-uhr": "^4.1.1",
+    "catberry-uri": "^2.1.4"
+  },
+  "devDependencies": {
+    "babel-lab": "^1.0.0",
+    "babel-eslint": "^4.1.3",
+    "eslint": "^1.6.0",
+    "lab": "^6.1.0"
+  },
+  "scripts": {
+    "lint": "node ./node_modules/.bin/eslint lib/* browser/*",
+    "test": "node ./node_modules/.bin/lab -T node_modules/babel-lab"
+  }
+}
