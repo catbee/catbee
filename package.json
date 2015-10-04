@@ -25,7 +25,10 @@
   },
   "main": "./index",
   "browser": {
-    "./lib/Bootstrapper.js": "__BrowserBundle.js"
+    "./lib/Bootstrapper.js": "__BrowserBundle.js",
+    "./lib/Catberry.js": "./browser/Catberry.js",
+    "./lib/providers/ModuleApiProvider.js": "./browser/providers/ModuleApiProvider.js",
+    "./lib/RequestRouter.js": "./browser/RequestRouter.js"
   },
   "dependencies": {
     "catberry-locator": "^1.1.7",
