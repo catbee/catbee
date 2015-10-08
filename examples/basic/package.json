@@ -1,0 +1,14 @@
+{
+  "name": "basic",
+  "version": "0.0.1",
+  "description": "Basic Catbee Example",
+  "main": "run.js",
+  "private": true,
+  "scripts": {
+    "test": "lab"
+  },
+  "author": "k.kaysarov <defcuts@mail.ru>",
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+}

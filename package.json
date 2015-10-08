@@ -33,7 +33,8 @@
   "dependencies": {
     "catberry-locator": "^1.1.7",
     "catberry-uhr": "^4.1.1",
-    "catberry-uri": "^2.1.4"
+    "catberry-uri": "^2.1.4",
+    "promise": "^7.0.4"
   },
   "devDependencies": {
     "babel-lab": "^1.0.0",
