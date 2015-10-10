@@ -41,11 +41,11 @@
       "never"
     ],
     "no-cond-assign": [
-      2,
+      0,
       "always"
     ],
     "no-console": 2,
-    "no-constant-condition": 2,
+    "no-constant-condition": 0,
     "no-control-regex": 1,
     "no-debugger": 2,
     "no-dupe-args": 2,
@@ -90,7 +90,7 @@
     ],
     "consistent-return": 1,
     "curly": 1,
-    "default-case": 1,
+    "default-case": 0,
     "dot-notation": 0,
     "dot-location": [
       2,
