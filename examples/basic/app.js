@@ -5,6 +5,8 @@
  */
 var catberry = require('../../index');
 var express = require('express');
+var handlebars = require('catberry-handlebars');
+var uhr = require('catberry-uhr');
 
 /**
  * Создание инстанса приложения
@@ -15,6 +17,9 @@ var express = require('express');
 exports.create = function create (config = {}) {
   var cat = catberry.create(config);
   var app = express();
+
+  handlebars.register(cat.locator);
+  uhr.register(cat.locator);
 
   app.use(cat.getMiddleware());
 

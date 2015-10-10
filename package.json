@@ -31,9 +31,12 @@
     "./lib/RequestRouter.js": "./browser/RequestRouter.js"
   },
   "dependencies": {
+    "baobab": "^2.0.0",
     "catberry-locator": "^1.1.7",
-    "catberry-uhr": "^4.1.1",
     "catberry-uri": "^2.1.4",
+    "chokidar": "^1.2.0",
+    "entities": "^1.1.1",
+    "glob": "^5.0.15",
     "promise": "^7.0.4"
   },
   "devDependencies": {

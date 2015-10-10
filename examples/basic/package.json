@@ -9,6 +9,8 @@
   },
   "author": "k.kaysarov <defcuts@mail.ru>",
   "dependencies": {
+    "catberry-handlebars": "^1.0.7",
+    "catberry-uhr": "^4.1.1",
     "express": "^4.13.3"
   }
 }
