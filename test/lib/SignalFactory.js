@@ -4,9 +4,7 @@ var assert = require('assert');
 var SignalFactory = require('../../lib/SignalFactory');
 
 lab.experiment('lib/SignalFactory', function() {
-  function noop () {
-
-  }
+  function noop () {}
 
   lab.experiment('#analyze', function() {
     lab.test('should throw error if action is not a function', function(done) {
@@ -32,6 +30,61 @@ lab.experiment('lib/SignalFactory', function() {
       var factory = new SignalFactory();
       var actions = [noop, [noop]];
       assert.doesNotThrow(factory._analyze.bind(factory, 'test', actions));
+      done();
+    });
+  });
+
+  lab.experiment('#checkArgs', function() {
+    lab.test('Should throw exception if signal args is not serialized', function(done) {
+      var a = {};
+      a.b = a;
+      assert.throws(SignalFactory._checkArgs.bind(null, a, 'test'), Error);
+      done();
+    });
+
+    lab.test('Should not throw exception if signal args is serialized', function(done) {
+      assert.doesNotThrow(SignalFactory._checkArgs.bind(null, { test: 'test' }, 'test'));
+      done();
+    });
+  });
+
+  lab.experiment('#staticTree', function() {
+    lab.test('Should return branches and actions as static tree', function(done) {
+      var factory = new SignalFactory();
+      var tree = factory._staticTree([noop]);
+      var branch = tree.branches[0];
+      var path = branch.path[0];
+      var outputs = branch.outputs;
+      var actionIndex = branch.actionIndex;
+
+      assert.equal(path, 0);
+      assert.equal(outputs, null);
+      assert.equal(actionIndex, 0);
+
+      done();
+    });
+
+    lab.test('Should correct format branches for async actions', function(done) {
+      var factory = new SignalFactory();
+      var tree = factory._staticTree([
+        [
+          noop, {
+            success: [
+              noop
+            ],
+            error: [
+              noop
+            ]
+          }
+        ]
+      ]);
+
+      var asyncBranch = tree.branches[0][0];
+
+      assert.equal(asyncBranch.path[0], 0);
+      assert(asyncBranch.outputs.success);
+      assert(asyncBranch.outputs.error);
+
       done();
     });
   });
