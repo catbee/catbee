@@ -88,4 +88,26 @@ lab.experiment('lib/SignalFactory', function() {
       done();
     });
   });
+
+  lab.experiment('#create', function() {
+    var factory;
+
+    lab.before(function (done) {
+      factory = new SignalFactory();
+      done();
+    });
+
+    lab.test('Should return function', function(done) {
+      var signal = factory.create('name', [noop]);
+      assert(typeof signal === 'function');
+      done();
+    });
+
+    lab.test('Run signal return promise', function(done) {
+      var signal = factory.create('name', [noop]);
+      var signalRun = signal();
+      assert(signalRun instanceof Promise);
+      done();
+    });
+  });
 });
