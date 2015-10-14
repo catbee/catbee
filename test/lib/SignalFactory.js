@@ -23,6 +23,23 @@ lab.experiment('lib/SignalFactory', function() {
     done();
   });
 
+  lab.experiment('#integration', function () {
+    lab.test('should run signal with one sync action', function(done) {
+      var factory = new SignalFactory(locator);
+      var signal = factory.create('test', [
+        function (args, state) {
+          console.log(args, state);
+        }
+      ]);
+
+      signal().then(function (result) {
+        console.log(result);
+      });
+
+      done();
+    });
+  });
+
   lab.experiment('#analyze', function() {
     lab.test('should throw error if action is not a function', function(done) {
       var factory = new SignalFactory(locator);
@@ -173,7 +190,7 @@ lab.experiment('lib/SignalFactory', function() {
       });
 
       lab.test('#set', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         state.set('test', 'test');
@@ -184,7 +201,7 @@ lab.experiment('lib/SignalFactory', function() {
       });
 
       lab.test('#apply', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         var initial = state.get('test');
@@ -201,7 +218,7 @@ lab.experiment('lib/SignalFactory', function() {
       });
 
       lab.test('#concat', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         state.set('test', []);
@@ -213,7 +230,7 @@ lab.experiment('lib/SignalFactory', function() {
       });
 
       lab.test('#deepMerge', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         state.set('test', {
@@ -228,14 +245,14 @@ lab.experiment('lib/SignalFactory', function() {
           }
         });
 
-        var value = state.get('test', 'test', 'test');
+        var value = state.get(['test', 'test', 'test']);
         assert.equal(value, 'value');
 
         done();
       });
 
       lab.test('#merge', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         state.set('test', {
@@ -246,14 +263,14 @@ lab.experiment('lib/SignalFactory', function() {
           test: 'value'
         });
 
-        var value = state.get('test', 'test');
+        var value = state.get(['test', 'test']);
         assert.equal(value, 'value');
 
         done();
       });
 
       lab.test('#unset', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         state.set('test', 'test');
@@ -265,7 +282,7 @@ lab.experiment('lib/SignalFactory', function() {
       });
 
       lab.test('#splice', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         state.set('test', [0,1,2]);
@@ -277,12 +294,12 @@ lab.experiment('lib/SignalFactory', function() {
       });
 
       lab.test('#unshift', function(done) {
-        var args = factory._createActionArgs({}, noop, false);
+        var args = factory._createActionArgs({}, { mutations: [] }, false);
         var state = args[1];
 
         state.set('test', []);
         state.unshift('test', 0);
-        var value = state.get('test', 0);
+        var value = state.get(['test', 0]);
         assert.equal(value, 0);
 
         done();
