@@ -2,32 +2,49 @@ var Lab = require('lab');
 var lab = exports.lab = Lab.script();
 var assert = require('assert');
 var SignalFactory = require('../../lib/SignalFactory');
+var State = require('../../lib/State');
+var ServiceLocator = require('catberry-locator');
+
+function noop () {}
+
+function createLocator () {
+  var locator = new ServiceLocator();
+  locator.registerInstance('serviceLocator', locator);
+  locator.registerInstance('config', {});
+  locator.register('state', State, {}, true);
+  return locator;
+}
 
 lab.experiment('lib/SignalFactory', function() {
-  function noop () {}
+  var locator;
+
+  lab.beforeEach(function(done) {
+    locator = createLocator();
+    done();
+  });
 
   lab.experiment('#analyze', function() {
     lab.test('should throw error if action is not a function', function(done) {
-      var factory = new SignalFactory();
+      var factory = new SignalFactory(locator);
       assert.throws(factory._analyze.bind(factory, 'test', [undefined]), Error);
       done();
     });
 
     lab.test('should not throw error if action is a function', function(done) {
-      var factory = new SignalFactory();
+      var factory = new SignalFactory(locator);
       assert.doesNotThrow(factory._analyze.bind(factory, 'test', [noop]));
       done();
     });
 
     lab.test('should throw error if in async array method is not defined', function(done) {
-      var factory = new SignalFactory();
+      var factory = new SignalFactory(locator);
       var actions = [noop, [undefined]];
       assert.throws(factory._analyze.bind(factory, 'test', actions), Error);
       done();
     });
 
     lab.test('should not throw error if in async array method is a function', function(done) {
-      var factory = new SignalFactory();
+      var factory = new SignalFactory(locator);
       var actions = [noop, [noop]];
       assert.doesNotThrow(factory._analyze.bind(factory, 'test', actions));
       done();
@@ -50,7 +67,7 @@ lab.experiment('lib/SignalFactory', function() {
 
   lab.experiment('#staticTree', function() {
     lab.test('Should return branches and actions as static tree', function(done) {
-      var factory = new SignalFactory();
+      var factory = new SignalFactory(locator);
       var tree = factory._staticTree([noop]);
       var branch = tree.branches[0];
       var path = branch.path[0];
@@ -65,7 +82,7 @@ lab.experiment('lib/SignalFactory', function() {
     });
 
     lab.test('Should correct format branches for async actions', function(done) {
-      var factory = new SignalFactory();
+      var factory = new SignalFactory(locator);
       var tree = factory._staticTree([
         [
           noop, {
@@ -93,7 +110,7 @@ lab.experiment('lib/SignalFactory', function() {
     var factory;
 
     lab.before(function (done) {
-      factory = new SignalFactory();
+      factory = new SignalFactory(locator);
       done();
     });
 
@@ -110,4 +127,166 @@ lab.experiment('lib/SignalFactory', function() {
       done();
     });
   });
+
+  lab.experiment('#createActionArgs', function() {
+    lab.test('Should not have mutators if action is async', function(done) {
+      var factory = new SignalFactory(locator);
+      var args = factory._createActionArgs({}, noop, true);
+      var state = args[1];
+
+      assert(state);
+      assert(state.get);
+      assert(state.exists);
+      assert(!state.set);
+
+      done();
+    });
+
+    lab.test('Should have mutators if action is sync', function(done) {
+      var factory = new SignalFactory(locator);
+      var args = factory._createActionArgs({}, noop, false);
+      var state = args[1];
+
+      assert(state);
+      assert(state.get);
+      assert(state.exists);
+      assert(state.set);
+
+      done();
+    });
+
+    lab.test('Should contains input in return array', function(done) {
+      var factory = new SignalFactory(locator);
+      var args = factory._createActionArgs({ test: 'test' }, noop, false);
+      var input = args[0];
+      assert.equal(input.test, 'test');
+      done();
+    });
+
+    lab.experiment('Test simple tree mutations and accessors', function() {
+      var factory;
+
+      lab.beforeEach(function(done) {
+        var locator = createLocator();
+        factory = new SignalFactory(locator);
+        done();
+      });
+
+      lab.test('#set', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        state.set('test', 'test');
+        var value = state.get('test');
+        assert.equal(value, 'test');
+
+        done();
+      });
+
+      lab.test('#apply', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        var initial = state.get('test');
+        assert(!initial);
+
+        state.apply('test', function() {
+          return 'test';
+        });
+
+        var value = state.get('test');
+        assert.equal(value, 'test');
+
+        done();
+      });
+
+      lab.test('#concat', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        state.set('test', []);
+        state.concat('test', ['test']);
+        var value = state.get(['test', 0]);
+        assert.equal(value, 'test');
+
+        done();
+      });
+
+      lab.test('#deepMerge', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        state.set('test', {
+          test: {
+            test: 'test'
+          }
+        });
+
+        state.deepMerge('test', {
+          test: {
+            test: 'value'
+          }
+        });
+
+        var value = state.get('test', 'test', 'test');
+        assert.equal(value, 'value');
+
+        done();
+      });
+
+      lab.test('#merge', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        state.set('test', {
+          test: 'test'
+        });
+
+        state.merge('test', {
+          test: 'value'
+        });
+
+        var value = state.get('test', 'test');
+        assert.equal(value, 'value');
+
+        done();
+      });
+
+      lab.test('#unset', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        state.set('test', 'test');
+        state.unset('test');
+        var value = state.get('test');
+        assert(!value);
+
+        done();
+      });
+
+      lab.test('#splice', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        state.set('test', [0,1,2]);
+        state.splice('test', [0, 2]);
+        var value = state.get('test');
+        assert.equal(value[0], 2);
+
+        done();
+      });
+
+      lab.test('#unshift', function(done) {
+        var args = factory._createActionArgs({}, noop, false);
+        var state = args[1];
+
+        state.set('test', []);
+        state.unshift('test', 0);
+        var value = state.get('test', 0);
+        assert.equal(value, 0);
+
+        done();
+      });
+    });
+  })
 });
