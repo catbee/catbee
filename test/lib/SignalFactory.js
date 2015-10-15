@@ -26,17 +26,43 @@ lab.experiment('lib/SignalFactory', function() {
   lab.experiment('#integration', function () {
     lab.test('should run signal with one sync action', function(done) {
       var factory = new SignalFactory(locator);
+
+      function sync (args, state) {
+        state.set('hello', args.hello);
+      }
+
       var signal = factory.create('test', [
-        function (args, state) {
-          console.log(args, state);
-        }
+        sync
       ]);
 
-      signal().then(function (result) {
-        console.log(result);
-      });
-
+      //signal({ hello: 'world' });
       done();
+    });
+
+    lab.test('should run signal with one async action', function(done) {
+      var factory = new SignalFactory(locator);
+      var async = factory.create('asyncTest', [
+        [
+          function (args, state, output) {
+            output.success();
+          }, {
+            success: [
+              function success () {
+                console.log('success');
+                done();
+              }
+            ],
+            error: [
+              function error () {
+                console.log('error');
+                done();
+              }
+            ]
+          }
+        ]
+      ]);
+
+      async();
     });
   });
 
