@@ -1,5 +1,5 @@
 var body = require('../actions/body');
 
-exports.clickOnBody = [
+exports.mainPageLoad = [
   body.setState
 ];

@@ -1,5 +1,9 @@
 module.exports = {
-  setState (args, state) {
+  setState () {
+
+  },
+
+  getState () {
 
   }
 };
