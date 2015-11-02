@@ -7,6 +7,7 @@ var BootstrapperBase = require('./node_modules/catbee/lib/base/BootstrapperBase.
 var StoreDispatcher = require('./node_modules/catbee/lib/StoreDispatcher');
 var ModuleApiProvider = require('./node_modules/catbee/browser/providers/ModuleApiProvider');
 var CookieWrapper = require('./node_modules/catbee/browser/CookieWrapper');
+var Logger = require('./node_modules/catberry/browser/Logger.js');
 
 /*eslint-disable */
 var stores = [ /**__stores**/ ];
@@ -40,6 +41,15 @@ class Bootstrapper extends BootstrapperBase {
     locator.register('moduleApiProvider', ModuleApiProvider, configObject, true);
     locator.register('cookieWrapper', CookieWrapper, configObject, true);
     locator.registerInstance('window', window);
+
+    var loggerConfig = configObject.logger || {};
+    var logger = new Logger(loggerConfig.levels);
+    locator.registerInstance('logger', logger);
+
+    window.onerror = function errorHandler(msg, uri, line) {
+      logger.fatal(uri + ':' + line + ' ' + msg);
+      return true;
+    };
 
     routes.forEach((route) => locator.registerInstance('routeDefinition', route));
     stores.forEach((store) => locator.registerInstance('store', store));

@@ -37,6 +37,7 @@
     "chokidar": "^1.2.0",
     "entities": "^1.1.1",
     "glob": "^5.0.15",
+    "log4js": "^0.6.27",
     "promise": "^7.0.4"
   },
   "devDependencies": {
