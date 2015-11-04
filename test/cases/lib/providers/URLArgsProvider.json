@@ -1,0 +1,300 @@
+{
+  "getArgsByUri": [
+    {
+      "name": "should return null if URI is not routed",
+      "routes": [
+        {
+          "expression": "/"
+        }
+      ],
+      "uri": "/none",
+      "expectedArgs": null
+    },
+    {
+      "name": "should return null if URI is not a string",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": null,
+      "expectedArgs": null
+    },
+    {
+      "name": "should return null if URI is empty string",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "",
+      "expectedArgs": null
+    },
+    {
+      "name": "should return null if there are not routes",
+      "routes": [
+
+      ],
+      "uri": "/state/value/?a=1&b=2",
+      "expectedArgs": null
+    },
+    {
+      "name": "should return null if route is empty",
+      "routes": [
+        {
+
+        },
+        {
+
+        }
+      ],
+      "uri": "/state/value/?a=1&b=2",
+      "expectedArgs": null
+    },
+    {
+      "name": "should return args object if URI is routed",
+      "routes": [
+        {
+          "expression": "/state/:arg"
+        }
+      ],
+      "uri": "/state/test",
+      "expectedArgs": {
+        "arg": "test"
+      }
+    },
+    {
+      "name": "should return args object with query params if URI is routed",
+      "routes": [
+        {
+          "expression": "/state?arg=:arg"
+        }
+      ],
+      "uri": "/state?arg=test",
+      "expectedArgs": {
+        "arg": "test"
+      }
+    },
+    {
+      "name": "should return args object with query params if URI is routed",
+      "routes": [
+        {
+          "expression": "/state?arg1=:arg1&arg2=:arg2"
+        }
+      ],
+      "uri": "/state?arg1=test&arg2=test",
+      "expectedArgs": {
+        "arg1": "test",
+        "arg2": "test"
+      }
+    },
+    {
+      "name": "should return the args if query string has wrong parameters",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state/val1/val2?c=val3&d=val4",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2"
+      }
+    },
+    {
+      "name": "should return args object with overwritten/extended values by route.args",
+      "routes": [
+        {
+          "expression": "/state?arg1=:arg1&arg2=:arg2",
+          "args": {
+            "arg1": "overwritten",
+            "arg3": "extended"
+          }
+        }
+      ],
+      "uri": "/state?arg1=test&arg2=test",
+      "expectedArgs": {
+        "arg1": "overwritten",
+        "arg2": "test",
+        "arg3": "extended"
+      }
+    },
+    {
+      "name": "should return the args if it has routes with the same paths but the second has no query",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        },
+        {
+          "expression": "/state/:arg1/:arg2"
+        }
+      ],
+      "uri": "/state/val1/val2?a=val3&b=val4",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2"
+      }
+    },
+    {
+      "name": "should return the args if it has routes with the same paths but the second has query",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2"
+        },
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state/val1/val2?a=val3&b=val4",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": "val3",
+        "arg4": "val4"
+      }
+    },
+    {
+      "name": "should return the state if it query parameter is an array",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state/val1/val2?a=val3&b=val4&a=val5&a=val6",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": ["val3","val5","val6"],
+        "arg4": "val4"
+      }
+    },
+    {
+      "name": "should return the state if route has array query parameters",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4&a=:arg5&a=:arg6"
+        }
+      ],
+      "uri": "/state/val1/val2?a=val3&b=val4",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg4": "val4"
+      }
+    },
+    {
+      "name": "should support another order of query parameters",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state/val1/val2?b=val4&a=val3",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": "val3",
+        "arg4": "val4"
+      }
+    },
+    {
+      "name": "should support when query parameters are empty",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state/val1/val2?",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2"
+      }
+    },
+    {
+      "name": "should support when query parameter is empty",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg2?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state/val1/val2?a=&b=val4",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": "",
+        "arg4": "val4"
+      }
+    },
+    {
+      "name": "should support when static path without parameters",
+      "routes": [
+        {
+          "expression": "/state?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state?a=val3&b=val4",
+      "expectedArgs": {
+        "arg3": "val3",
+        "arg4": "val4"
+      }
+    },
+    {
+      "name": "should support overriding path parameters by query string parameters",
+      "routes": [
+        {
+          "expression": "/state/:arg1/:arg3?a=:arg3&b=:arg4"
+        }
+      ],
+      "uri": "/state/val1/val2?a=valX&b=val4",
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg3": "valX",
+        "arg4": "val4"
+      }
+    }
+  ],
+  "getSignalByUri": [
+    {
+      "name": "should return signal name if it's defined in route and URI is routed",
+      "routes": [
+        {
+          "expression": "/",
+          "signal": "test"
+        }
+      ],
+      "uri": "/",
+      "expectedSignal": "test"
+    },
+    {
+      "name": "should not return signal name if it's not defined in route and URI is routed",
+      "routes": [
+        {
+          "expression": "/"
+        }
+      ],
+      "uri": "/",
+      "expectedSignal": null
+    },
+    {
+      "name": "should not return signal name if it's defined in route but URI is not routed",
+      "routes": [
+        {
+          "expression": "/state",
+          "signal": "test"
+        }
+      ],
+      "uri": "/",
+      "expectedSignal": null
+    },
+    {
+      "name": "should not return signal name if it's not defined in route and URI is not routed",
+      "routes": [
+        {
+          "expression": "/state"
+        }
+      ],
+      "uri": "/",
+      "expectedSignal": null
+    }
+  ]
+}

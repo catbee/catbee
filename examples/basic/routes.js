@@ -1,7 +1,9 @@
 module.exports = [
   {
-    expression: '/',
+    expression: '/:arg/?arg2=:arg2',
     signal: 'mainPageLoad',
-    map: (state) => state
+    args: {
+      arg3: 'arg3'
+    }
   }
 ];
