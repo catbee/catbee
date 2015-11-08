@@ -1,3 +1,3 @@
 module.exports = {
-  value: ['path', 'to', 'object']
+  value: ['hello']
 };

@@ -1,5 +1,5 @@
-module.exports = function (args) {
+module.exports = function (path) {
   return {
-    value: ['path', 'to', 'id', args.id]
+    value: [path]
   }
 };

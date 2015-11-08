@@ -1,9 +1,9 @@
 module.exports = {
-  setState () {
-
+  setState (args, state) {
+    state.set('hello', 'test');
   },
 
-  getState () {
-
+  getState (args, state) {
+    state.set('hello', 'overwritten');
   }
 };

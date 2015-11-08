@@ -1,0 +1,5 @@
+{
+  "name": "header",
+  "template": "./component.html",
+  "logic": "./component.js"
+}

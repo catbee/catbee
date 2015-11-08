@@ -1,5 +1,6 @@
 var body = require('../actions/body');
 
 exports.mainPageLoad = [
-  body.setState
+  body.setState,
+  body.getState
 ];
