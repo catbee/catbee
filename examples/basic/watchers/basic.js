@@ -1,3 +1,3 @@
 module.exports = {
-  value: ['hello']
+  value: ['fullName']
 };
