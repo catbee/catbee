@@ -37,8 +37,9 @@
     "chokidar": "^1.2.0",
     "entities": "^1.1.1",
     "glob": "^5.0.15",
-    "log4js": "^0.6.27",
-    "promise": "^7.0.4"
+    "winston": "^2.1.0",
+    "winston-console-formatter": "^0.1.0",
+    "winston-graylog2": "^0.2.3"
   },
   "devDependencies": {
     "babel-lab": "^1.0.0",

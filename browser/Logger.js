@@ -1,32 +1,21 @@
-const LEVELS = {
-  DEBUG: 'debug',
-  TRACE: 'trace',
-  INFO: 'info',
-  WARN: 'warn',
-  ERROR: 'error',
-  FATAL: 'fatal'
-};
+var LoggerBase = require('../lib/base/LoggerBase');
 
 /**
  * Creates browser logger.
- * @param {Object|string} levels Levels to log.
- * @supported Chrome, Firefox>=2.0, Internet Explorer>=8, Opera, Safari.
+ * @param {Object} $config
+ * @param {Window} $window
+ * @param {Object} $uhr
  * @constructor
  */
-class Logger {
-  constructor (levels) {
-    if (typeof (levels) === 'object') {
-      this._levels = levels;
-    }
+class Logger extends LoggerBase {
+  constructor ($config, $window, $uhr) {
+    super();
 
-    if (typeof(levels) === 'string') {
-      this._levels = {};
-      Object.keys(LEVELS)
-        .forEach(level => {
-          this._levels[LEVELS[level]] =
-            (levels.search(LEVELS[level]) !== -1);
-        }, this);
-    }
+    this._config = $config.logger;
+    this._window = $window;
+    this._uhr = $uhr;
+
+    this._setLevels(this._config.levels);
 
     this.debug = this.debug.bind(this);
     this.trace = this.trace.bind(this);
@@ -34,115 +23,174 @@ class Logger {
     this.warn = this.warn.bind(this);
     this.error = this.error.bind(this);
     this.fatal = this.fatal.bind(this);
+    this.onerror = this.onerror.bind(this);
   }
 
   /**
-   * Current levels of logging.
+   * Catberry UHR reference
+   * @type {UHR}
+   * @private
+   */
+  _uhr = null;
+
+  /**
+   * Browser window reference
+   *
+   * @type {Window}
+   * @private
+   */
+  _window = null;
+
+  /**
+   * Catberry logger config reference
    * @type {Object}
    * @private
    */
-  _levels = {
-    debug: true,
-    trace: true,
-    info: true,
-    warn: true,
-    error: true,
-    fatal: true
-  };
+  _config = null;
+
+  /**
+   * Window error event handler.
+   *
+   * @param {ErrorEvent} error
+   * @param {String} message
+   * @param {Number} lineno - line number
+   * @param {Number} colno - column number
+   * @param {String} filename - script
+   */
+  onerror ({ message, filename, lineno, colno, error }) {
+    this._sendError({
+      message,
+      stack: error.stack,
+      filename: filename,
+      line: `${lineno}:${colno}`
+    });
+  }
 
   /**
    * Logs trace message.
-   * @param {string} message Trace message.
+   * @param {string} messages Trace message.
    */
-  trace (message) {
+  trace (...messages) {
     if (!this._levels.trace) {
       return;
     }
 
     if (console.log) {
-      console.log(message);
+      console.log(...messages);
     }
   }
 
   /**
    * Logs trace message.
-   * @param {string} message Trace message.
+   * @param {string} messages Trace message.
    */
-  debug (message) {
+  debug (...messages) {
     if (!this._levels.debug) {
       return;
     }
 
     if (console.log) {
-      console.log(message);
+      console.log(...messages);
     }
   }
 
   /**
    * Logs info message.
-   * @param {string} message Information message.
+   * @param {string} messages Information message.
    */
-  info (message) {
+  info (...messages) {
     if (!this._levels.info) {
       return;
     }
 
     if (console.info) {
-      console.info(message);
+      console.info(...messages);
     }
-  };
+  }
 
   /**
    * Logs warn message.
-   * @param {string} message Warning message.
+   * @param {...string} messages Warning message.
    */
-  warn (message) {
+  warn (...messages) {
     if (!this._levels.warn) {
       return;
     }
 
     if (console.warn) {
-      console.warn(message);
+      console.warn(...messages);
     }
-  };
+  }
 
   /**
    * Logs error message.
-   * @param {string|Error} error Error object or message.
+   * @param {string|Object|Error} message Error object or message.
+   * @param {Object|undefined} meta
    */
-  error (error) {
+  error (message, meta = {}) {
     if (!this._levels.error) {
       return;
     }
 
-    Logger.writeError(error);
-  };
+    this._sendError(message, meta);
+    Logger.writeError(message);
+  }
 
   /**
    * Logs error message.
-   * @param {string|Error} error Error object or message.
+   * @param {string|Object|Error} message Error object or message.
+   * @param {Object|undefined} meta
    */
-  fatal (error) {
+  fatal (message, meta = {}) {
     if (!this._levels.fatal) {
       return;
     }
-    Logger.writeError(error);
-  };
+
+    this._sendError(message, meta);
+    Logger.writeError(message, meta);
+  }
 
   /**
    * Writes error to console.
-   * @param {Error|string} error Error to write.
+   * @param {...(string|Error|Object)} errors.
    */
-  static writeError (error) {
-    try {
-      if (!(error instanceof Error)) {
-        error = typeof(error) === 'string' ? new Error(error) : new Error();
-      }
-      if (console.error) {
-        console.error(error);
-      }
-    } catch (e) {
-      Logger.writeError(e);
+  static writeError (...errors) {
+    if (console.error) {
+      console.error(...errors);
     }
   }
+
+  _sendError (error, data) {
+    var { message, fields } = this._errorFormatter(error);
+    var meta = Object.assign(fields, data);
+
+    this._request({
+      message, ...meta,
+      from: 'Client Error',
+      userHRef: this._window.location.href,
+      userAgent: this._window.navigator.userAgent
+    });
+  }
+
+  _request (data) {
+    if (!this._config.url) {
+      return;
+    }
+
+    var headers = {
+      'Content-Type': 'application/json'
+    };
+
+    var protocol = this._window.location.protocol;
+    var host = this._window.location.host;
+    var url = this._config.url;
+
+    var options = { data, headers };
+
+    this._uhr
+      .post(`${protocol}//${host}/${url}`, options)
+      .catch(cause => Logger.writeError(cause));
+  }
 }
+
+module.exports = Logger;
