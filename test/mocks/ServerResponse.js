@@ -6,7 +6,7 @@ class ServerResponse extends Writable {
     this.setHeaders = {};
   }
 
-  _result = '';
+  result = '';
 
   status = 200;
 
@@ -22,7 +22,7 @@ class ServerResponse extends Writable {
     this.setHeaders = headers;
   }
 
-  end  () {
+  end () {
     super.end(...arguments);
   }
 

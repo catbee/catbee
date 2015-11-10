@@ -47,7 +47,7 @@
   },
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint lib/* browser/*",
-    "test": "node ./node_modules/.bin/lab -T node_modules/babel-lab",
+    "test": "node ./node_modules/.bin/lab -T node_modules/babel-lab -D",
     "coverage": "node ./node_modules/.bin/lab -T node_modules/babel-lab -r html -o coverage.html -S"
   }
 }
