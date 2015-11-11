@@ -14,6 +14,7 @@ var Component = require('../mocks/Component');
 var ComponentErrorAsync = require('../mocks/ComponentErrorAsync');
 var ComponentError = require('../mocks/ComponentError');
 var State = require('../../lib/State');
+var appstate = require('appstate');
 
 lab.experiment('lib/DocumentRenderer', function() {
   lab.experiment('#render', function() {
@@ -1207,8 +1208,8 @@ function createRoutingContext(config, watchers, components, actions = []) {
   locator.registerInstance('signalLoader', {
     load: function () {
       var name = 'test';
-      var runner = signalFactory.createSignal(name, actions);
-      locator.registerInstance('signalDefinitions', { runner, name });
+      var fn = appstate.create(name, actions);
+      locator.registerInstance('signal', { fn, name });
       return Promise.resolve();
     }
   });
