@@ -4,14 +4,17 @@
  */
 var Catberry = require('./node_modules/catbee/browser/Catberry.js');
 var BootstrapperBase = require('./node_modules/catbee/lib/base/BootstrapperBase.js');
-var StoreDispatcher = require('./node_modules/catbee/lib/StoreDispatcher');
 var ModuleApiProvider = require('./node_modules/catbee/browser/providers/ModuleApiProvider');
 var CookieWrapper = require('./node_modules/catbee/browser/CookieWrapper');
 var Logger = require('./node_modules/catbee/browser/Logger.js');
 
-var stores = [/** __stores **/];
-var components = [/** __components **/];
+
+/*eslint-disable */
+var watchers = [ /**__watchers**/ ];
+var components = [ /**__components**/ ];
+var signals = [ /**__signals**/ ];
 var routes = '__routes' || [];
+/*eslint-enable */
 
 /**
  * Creates new instance of the browser Catberry's bootstrapper.
@@ -44,8 +47,9 @@ class Bootstrapper extends BootstrapperBase {
     window.addEventListener('error', logger.onerror);
 
     routes.forEach((route) => locator.registerInstance('routeDefinition', route));
-    stores.forEach((store) => locator.registerInstance('store', store));
     components.forEach((component) => locator.registerInstance('component', component));
+    signals.forEach((signal) => locator.registerInstance('signal', signal));
+    watchers.forEach((watcher) => locator.registerInstance('watcher', watcher));
   }
 }
 

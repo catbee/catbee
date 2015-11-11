@@ -28,7 +28,10 @@
     "./lib/Bootstrapper.js": "__BrowserBundle.js",
     "./lib/Catberry.js": "./browser/Catberry.js",
     "./lib/providers/ModuleApiProvider.js": "./browser/providers/ModuleApiProvider.js",
-    "./lib/RequestRouter.js": "./browser/RequestRouter.js"
+    "./lib/RequestRouter.js": "./browser/RequestRouter.js",
+    "./lib/loaders/ComponentLoader.js": "./browser/ComponentLoader.js",
+    "./lib/loaders/SignalLoader.js": "./browser/SignalLoader.js",
+    "./lib/loaders/WatcherLoader.js": "./browser/WatcherLoader.js"
   },
   "dependencies": {
     "appstate": "^1.0.0",
@@ -41,6 +44,8 @@
     "winston": "^2.1.0",
     "winston-console-formatter": "^0.1.0",
     "winston-graylog2": "^0.2.3"
+    "promise": "^7.0.4",
+    "uglify-js": "^2.5.0"
   },
   "devDependencies": {
     "babel-lab": "^1.0.0",
