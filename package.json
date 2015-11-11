@@ -31,6 +31,7 @@
     "./lib/RequestRouter.js": "./browser/RequestRouter.js"
   },
   "dependencies": {
+    "appstate": "^1.0.0",
     "baobab": "^2.0.0",
     "catberry-locator": "^1.1.7",
     "catberry-uri": "^2.1.4",
