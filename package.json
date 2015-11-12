@@ -36,6 +36,7 @@
   "dependencies": {
     "appstate": "^1.0.0",
     "baobab": "^2.0.0",
+    "browserify": "^12.0.1",
     "catberry-locator": "^1.1.7",
     "catberry-uri": "^2.1.4",
     "chokidar": "^1.2.0",
@@ -44,8 +45,10 @@
     "winston": "^2.1.0",
     "winston-console-formatter": "^0.1.0",
     "winston-graylog2": "^0.2.3"
+    "pretty-hrtime": "^1.0.1",
     "promise": "^7.0.4",
-    "uglify-js": "^2.5.0"
+    "uglify-js": "^2.5.0",
+    "watchify": "^3.6.0"
   },
   "devDependencies": {
     "babel-lab": "^1.0.0",
