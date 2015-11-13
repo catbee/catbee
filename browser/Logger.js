@@ -11,11 +11,12 @@ class Logger extends LoggerBase {
   constructor ($config, $window, $uhr) {
     super();
 
-    this._config = $config.logger;
+    this._config = $config;
+    this._config.logger = this._config.logger || {};
     this._window = $window;
     this._uhr = $uhr;
 
-    this._setLevels(this._config.levels);
+    this._setLevels(this._config.logger.levels);
 
     this.debug = this.debug.bind(this);
     this.trace = this.trace.bind(this);
@@ -162,33 +163,38 @@ class Logger extends LoggerBase {
 
   _sendError (error, data) {
     var { message, fields } = this._errorFormatter(error);
-    var meta = Object.assign(fields, data);
+    var meta = Object.assign({}, fields, data);
 
     this._request({
       message, ...meta,
-      from: 'Client Error',
+      from: 'Client',
       userHRef: this._window.location.href,
       userAgent: this._window.navigator.userAgent
     });
   }
 
   _request (data) {
-    if (!this._config.url) {
+    if (!this._config.logger.url) {
       return;
+    }
+
+    var loggerHost = this._config.logger.host;
+    if (!loggerHost) {
+      let protocol = this._window.location.protocol;
+      let host = this._window.location.host;
+
+      loggerHost = `${protocol}//${host}`;
     }
 
     var headers = {
       'Content-Type': 'application/json'
     };
-
-    var protocol = this._window.location.protocol;
-    var host = this._window.location.host;
-    var url = this._config.url;
-
     var options = { data, headers };
 
+    var url = this._config.logger.url;
+
     this._uhr
-      .post(`${protocol}//${host}/${url}`, options)
+      .post(`${loggerHost}/${url}`, options)
       .catch(cause => Logger.writeError(cause));
   }
 }
