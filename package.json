@@ -1,6 +1,6 @@
 {
   "name": "catbee",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": {
     "name": "Kirill Kaysarov",
     "email": "k.kaysarov@2gis.ru"
@@ -26,13 +26,14 @@
   "main": "./index",
   "browser": {
     "./lib/Bootstrapper.js": "__BrowserBundle.js",
-    "./lib/Catberry.js": "./browser/Catberry.js",
-    "./lib/providers/ModuleApiProvider.js": "./browser/providers/ModuleApiProvider.js",
-    "./lib/RequestRouter.js": "./browser/RequestRouter.js",
-    "./lib/DocumentRenderer.js": "./browser/DocumentRenderer.js",
+    "./lib/helpers/hrTimeHelper.js": "./browser/helpers/hrTimeHelper.js",
     "./lib/loaders/ComponentLoader.js": "./browser/loaders/ComponentLoader.js",
     "./lib/loaders/SignalLoader.js": "./browser/loaders/SignalLoader.js",
-    "./lib/loaders/WatcherLoader.js": "./browser/loaders/WatcherLoader.js"
+    "./lib/loaders/WatcherLoader.js": "./browser/loaders/WatcherLoader.js",
+    "./lib/providers/ModuleApiProvider.js": "./browser/providers/ModuleApiProvider.js",
+    "./lib/Catberry.js": "./browser/Catberry.js",
+    "./lib/DocumentRenderer.js": "./browser/DocumentRenderer.js",
+    "./lib/RequestRouter.js": "./browser/RequestRouter.js"
   },
   "dependencies": {
     "appstate": "^1.0.0",
@@ -47,7 +48,6 @@
     "glob": "^5.0.15",
     "mkdirp": "^0.5.1",
     "pretty-hrtime": "^1.0.1",
-    "promise": "^7.0.4",
     "uglify-js": "^2.5.0",
     "watchify": "^3.6.0",
     "winston": "^2.1.0",
