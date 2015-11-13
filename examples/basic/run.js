@@ -18,5 +18,8 @@ function start (instance) {
  * Создаем инстанс приложения и запускаем сервер
  */
 app
-  .create()
+  .create({
+    "public": "./public",
+    "publicPath": "/public"
+  })
   .then(start);

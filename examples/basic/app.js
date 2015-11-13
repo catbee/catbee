@@ -7,6 +7,7 @@ var catberry = require('../../index');
 var express = require('express');
 var handlebars = require('catberry-handlebars');
 var uhr = require('catberry-uhr');
+var path = require('path');
 
 /**
  * Создание инстанса приложения
@@ -18,10 +19,14 @@ exports.create = function create (config = {}) {
   var cat = catberry.create(config);
   var app = express();
 
+  var staticPath = path.join(__dirname, config.public);
+  var staticRoute = config.publicPath;
+
   handlebars.register(cat.locator);
   uhr.register(cat.locator);
 
   app.use(cat.getMiddleware());
+  app.use(staticRoute, express.static(staticPath));
 
   return Promise.resolve(app);
 };

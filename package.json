@@ -29,26 +29,29 @@
     "./lib/Catberry.js": "./browser/Catberry.js",
     "./lib/providers/ModuleApiProvider.js": "./browser/providers/ModuleApiProvider.js",
     "./lib/RequestRouter.js": "./browser/RequestRouter.js",
-    "./lib/loaders/ComponentLoader.js": "./browser/ComponentLoader.js",
-    "./lib/loaders/SignalLoader.js": "./browser/SignalLoader.js",
-    "./lib/loaders/WatcherLoader.js": "./browser/WatcherLoader.js"
+    "./lib/DocumentRenderer.js": "./browser/DocumentRenderer.js",
+    "./lib/loaders/ComponentLoader.js": "./browser/loaders/ComponentLoader.js",
+    "./lib/loaders/SignalLoader.js": "./browser/loaders/SignalLoader.js",
+    "./lib/loaders/WatcherLoader.js": "./browser/loaders/WatcherLoader.js"
   },
   "dependencies": {
     "appstate": "^1.0.0",
     "baobab": "^2.0.0",
     "browserify": "^12.0.1",
+    "catberry-es6": "^1.0.1",
     "catberry-locator": "^1.1.7",
     "catberry-uri": "^2.1.4",
     "chokidar": "^1.2.0",
     "entities": "^1.1.1",
     "glob": "^5.0.15",
-    "winston": "^2.1.0",
-    "winston-console-formatter": "^0.1.0",
-    "winston-graylog2": "^0.2.3"
+    "mkdirp": "^0.5.1",
     "pretty-hrtime": "^1.0.1",
     "promise": "^7.0.4",
     "uglify-js": "^2.5.0",
-    "watchify": "^3.6.0"
+    "watchify": "^3.6.0",
+    "winston": "^2.1.0",
+    "winston-console-formatter": "^0.1.0",
+    "winston-graylog2": "^0.2.3"
   },
   "devDependencies": {
     "babel-lab": "^1.0.0",
