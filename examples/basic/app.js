@@ -6,7 +6,6 @@
 var catberry = require('../../index');
 var express = require('express');
 var handlebars = require('catberry-handlebars');
-var uhr = require('catberry-uhr');
 var path = require('path');
 
 /**
@@ -23,7 +22,6 @@ exports.create = function create (config = {}) {
   var staticRoute = config.publicPath;
 
   handlebars.register(cat.locator);
-  uhr.register(cat.locator);
 
   app.use(cat.getMiddleware());
   app.use(staticRoute, express.static(staticPath));
