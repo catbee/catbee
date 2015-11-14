@@ -1,7 +1,13 @@
 var appstate = require('appstate');
+var LoaderBase = require('../../lib/base/LoaderBase');
+var util = require('util');
 
-class SignalLoader {
+const WARN_DUPLICATE_SIGNAL_NAME = 'Signal name %s already register... Skipping...';
+
+class SignalLoader extends LoaderBase {
   constructor ($serviceLocator) {
+    super($serviceLocator.resolveAll('signalTransform'));
+
     this._serviceLocator = $serviceLocator;
     this._eventBus = $serviceLocator.resolve('eventBus');
   }
@@ -36,43 +42,58 @@ class SignalLoader {
       return Promise.resolve(this._loadedSignals);
     }
 
-    this._loadedSignals = Object.create(null);
+    var result = Object.create(null);
 
     return Promise.resolve()
       .then(() => {
         var signalsFiles = this._serviceLocator.resolveAll('signal');
-        var signals = [];
 
         signalsFiles.forEach(file => {
-          var fileDefinition = file.definition;
-          Object.keys(fileDefinition)
-            .forEach(signalKey => {
-              var definition = fileDefinition[signalKey];
-              signals.push({
-                name: signalKey,
-                definition: definition
+          this._getSignalsFromFile(file.definition)
+            .then(signals => {
+              signals.forEach(signal => {
+                if (!signal || typeof (signal) !== 'object') {
+                  return;
+                }
+
+                if (signal.name in result) {
+                  this._logger.warn(util.format(
+                    WARN_DUPLICATE_SIGNAL_NAME, signal.name
+                  ));
+
+                  return;
+                }
+
+                result[signal.name] = signal.fn;
               });
+
+              this._loadedSignals = result;
+              this._eventBus.emit('allSignalsLoaded', result);
+              return this._loadedSignals;
             });
         });
-
-        return signals;
-      })
-      .then(signals => {
-        var signalPromises = [];
-        signals.forEach(signal => signalPromises.unshift(this._processSignal(signal)));
-        return Promise.all(signalPromises);
-      })
-      .then(signals => {
-        signals.forEach(signal => {
-          if (!signal || typeof (signal) !== 'object') {
-            return;
-          }
-          this._loadedSignals[signal.name] = signal;
-        });
-
-        this._eventBus.emit('allSignalsLoaded', signals);
-        return this._loadedSignals;
       });
+  }
+
+  /**
+   * Get signals file from memory, and save signals from it
+   * @param {Object} file
+   * @private
+   */
+  _getSignalsFromFile (file) {
+    var signalPromises = Object.keys(file)
+      .map((name) => {
+        var actions = file[name];
+        return this._applyTransforms(actions)
+          .then((transformedActions) => {
+            return {
+              name,
+              fn: appstate.create(name, transformedActions)
+            }
+          });
+      });
+
+    return Promise.all(signalPromises);
   }
 
   /**
@@ -81,21 +102,6 @@ class SignalLoader {
    */
   getSignalsByNames () {
     return this._loadedSignals || Object.create(null);
-  }
-
-  /**
-   * Processes component and apply required operations.
-   * @param {Object} signalDetails Loaded component details.
-   * @returns {Object} Component object.
-   * @private
-   */
-  _processSignal ({ name, definition }) {
-    var fn = appstate.create(name, definition);
-    this._eventBus.emit('signalLoaded', { name });
-
-    return {
-      name, fn
-    }
   }
 }
 

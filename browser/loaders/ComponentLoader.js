@@ -4,8 +4,7 @@ var util = require('util');
 
 class ComponentLoader extends LoaderBase {
   constructor ($serviceLocator) {
-    var transforms = $serviceLocator.resolveAll('componentTransform');
-    super(transforms);
+    super($serviceLocator.resolveAll('componentTransform'));
 
     this._serviceLocator = $serviceLocator;
     this._eventBus = $serviceLocator.resolve('eventBus');
@@ -51,29 +50,26 @@ class ComponentLoader extends LoaderBase {
 
     this._loadedComponents = Object.create(null);
 
-    var self = this;
     return Promise.resolve()
-      .then(function () {
-        var components = self._serviceLocator.resolveAll('component'),
-          componentPromises = [];
+      .then(() => {
+        var components = this._serviceLocator.resolveAll('component');
+        var componentPromises = [];
 
         // the list is a stack, we should reverse it
-        components.forEach(function (component) {
-          componentPromises.unshift(
-            self._processComponent(component)
-          );
+        components.forEach(component => {
+          componentPromises.unshift(this._processComponent(component));
         });
         return Promise.all(componentPromises);
       })
-      .then(function (components) {
-        components.forEach(function (component) {
+      .then(components => {
+        components.forEach(component => {
           if (!component || typeof (component) !== 'object') {
             return;
           }
-          self._loadedComponents[component.name] = component;
+          this._loadedComponents[component.name] = component;
         });
-        self._eventBus.emit('allComponentsLoaded', components);
-        return self._loadedComponents;
+        this._eventBus.emit('allComponentsLoaded', components);
+        return this._loadedComponents;
       });
   }
 
@@ -84,44 +80,27 @@ class ComponentLoader extends LoaderBase {
    * @private
    */
   _processComponent (componentDetails) {
-    var self = this;
     var component = Object.create(componentDetails);
 
     return this._applyTransforms(component)
-      .then(function (transformed) {
+      .then(transformed => {
         component = transformed;
-        self._templateProvider.registerCompiled(
-          component.name, component.templateSource
-        );
+        this._templateProvider.registerCompiled(component.name, component.templateSource);
         component.template = {
-          render: function (dataContext) {
-            return self._templateProvider.render(
-              component.name, dataContext
-            );
-          }
+          render: dataContext => this._templateProvider.render(component.name, dataContext)
         };
+
         if (typeof (component.errorTemplateSource) === 'string') {
-          var errorTemplateName = moduleHelper.getNameForErrorTemplate(
-            component.name
-          );
-          self._templateProvider.registerCompiled(
-            errorTemplateName, component.errorTemplateSource
-          );
+          var errorTemplateName = moduleHelper.getNameForErrorTemplate(component.name);
+          this._templateProvider.registerCompiled(errorTemplateName, component.errorTemplateSource);
           component.errorTemplate = {
-            render: function (dataContext) {
-              return self._templateProvider.render(
-                errorTemplateName, dataContext
-              );
-            }
+            render: dataContext => this._templateProvider.render(errorTemplateName, dataContext)
           };
         }
-        self._eventBus.emit('componentLoaded', component);
+        this._eventBus.emit('componentLoaded', component);
         return component;
       })
-      .catch(function (reason) {
-        self._eventBus.emit('error', reason);
-        return null;
-      });
+      .catch(reason => this._eventBus.emit('error', reason));
   }
 
   /**

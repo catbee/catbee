@@ -34,14 +34,14 @@ class WatcherLoader {
       return Promise.resolve(this._loadedWatchers);
     }
 
-    this._loadedWatchers = Object.create(null);
+    var result = Object.create(null);
 
     return Promise.resolve()
       .then(() => {
         var watchers = this._serviceLocator.resolveAll('watcher');
         var watcherPromises = [];
 
-        watchers.forEach(watcher => watcherPromises.unshift(this._processWatcher(watcher)));
+        watchers.forEach(watcher => watcherPromises.unshift(this._getWatcher(watcher)));
         return Promise.all(watcherPromises);
       })
       .then(watchers => {
@@ -50,10 +50,11 @@ class WatcherLoader {
             return;
           }
 
-          this._loadedWatchers[watcher.name] = watcher;
+          result[watcher.name] = watcher.definition;
         });
 
-        this._eventBus.emit('allWatchersLoaded', watchers);
+        this._loadedWatchers = result;
+        this._eventBus.emit('allWatchersLoaded', result);
         return this._loadedWatchers;
       });
   }
@@ -67,12 +68,12 @@ class WatcherLoader {
   }
 
   /**
-   * Process watchers
+   * Get valid watchers
    * @param {String} name
    * @param {Object} definition
    * @private
    */
-  _processWatcher ({ name, definition }) {
+  _getWatcher ({ name, definition }) {
     if (typeof definition === 'function' || typeof definition === 'object') {
       return Promise.resolve({ name, definition });
     } else {
