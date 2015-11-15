@@ -1,6 +1,6 @@
 module.exports = [
   {
-    expression: '/:arg/?arg2=:arg2',
+    expression: '/',
     signal: 'mainPageLoad',
     args: {
       arg3: 'arg3'
