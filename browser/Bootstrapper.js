@@ -7,6 +7,7 @@ var BootstrapperBase = require('../../lib/base/BootstrapperBase.js');
 var ModuleApiProvider = require('../../browser/providers/ModuleApiProvider');
 var CookieWrapper = require('../../browser/CookieWrapper');
 var Logger = require('../../browser/Logger.js');
+var util = require('util');
 
 /*eslint-disable */
 var watchers = [ /**__watchers**/ ];
@@ -14,6 +15,10 @@ var components = [ /**__components**/ ];
 var signals = [ /**__signals**/ ];
 var routes = '__routes' || [];
 /*eslint-enable */
+
+const DEBUG_DOCUMENT_UPDATED = 'Document updated (%d store(s) changed)';
+const DEBUG_COMPONENT_BOUND = 'Component "%s" is bound';
+const DEBUG_COMPONENT_UNBOUND = 'Component "%s" is unbound';
 
 /**
  * Creates new instance of the browser Catberry's bootstrapper.
@@ -40,10 +45,45 @@ class Bootstrapper extends BootstrapperBase {
     locator.register('logger', Logger, configObject, true);
     locator.registerInstance('window', window);
 
+    var logger = locator.resolve('logger');
+    var eventBus = locator.resolve('eventBus');
+    this._wrapEventsWithLogger(configObject, eventBus, logger);
+
+    window.onerror = function errorHandler(msg, uri, line) {
+      logger.fatal(uri + ':' + line + ' ' + msg);
+      return true;
+    };
+
     routes.forEach(route => locator.registerInstance('routeDefinition', route));
     watchers.forEach(watcher => locator.registerInstance('watcher', watcher));
     signals.forEach(signal => locator.registerInstance('signal', signal));
     components.forEach(component => locator.registerInstance('component', component));
+  }
+
+  _wrapEventsWithLogger (config, eventBus, logger) {
+    super._wrapEventsWithLogger(config, eventBus, logger);
+    var isRelease = Boolean(config.isRelease);
+
+    if (isRelease) {
+      return;
+    }
+
+    eventBus
+      .on('documentUpdated', function (args) {
+        logger.debug(util.format(DEBUG_DOCUMENT_UPDATED, args.length));
+      })
+      .on('componentBound', function (args) {
+        logger.debug(util.format(
+          DEBUG_COMPONENT_BOUND,
+          args.element.tagName + (args.id ? '#' + args.id : '')
+        ));
+      })
+      .on('componentUnbound', function (args) {
+        logger.debug(util.format(
+          DEBUG_COMPONENT_UNBOUND,
+          args.element.tagName + (args.id ? '#' + args.id : '')
+        ));
+      });
   }
 }
 

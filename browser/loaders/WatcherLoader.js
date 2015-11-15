@@ -75,7 +75,9 @@ class WatcherLoader {
    */
   _getWatcher ({ name, definition }) {
     if (typeof definition === 'function' || typeof definition === 'object') {
-      return Promise.resolve({ name, definition });
+      var watcher = { name, definition };
+      this._eventBus.emit('watcherLoaded', watcher);
+      return Promise.resolve(watcher);
     } else {
       return Promise.resolve(null);
     }

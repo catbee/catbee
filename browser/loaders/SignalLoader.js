@@ -86,10 +86,13 @@ class SignalLoader extends LoaderBase {
         var actions = file[name];
         return this._applyTransforms(actions)
           .then((transformedActions) => {
-            return {
+            var signal = {
               name,
               fn: appstate.create(name, transformedActions)
-            }
+            };
+
+            this._eventBus.emit('signalLoaded', signal);
+            return signal;
           });
       });
 
