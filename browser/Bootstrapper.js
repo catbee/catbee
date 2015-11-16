@@ -2,11 +2,11 @@
  * __BrowserBundle.js template file
  * @reference builders/BootstrapperBuilder
  */
-var Catberry = require('./node_modules/catberry/browser/Catberry.js');
-var BootstrapperBase = require('./node_modules/catberry/lib/base/BootstrapperBase.js');
-var ModuleApiProvider = require('./node_modules/catberry/browser/providers/ModuleApiProvider');
-var CookieWrapper = require('./node_modules/catberry/browser/CookieWrapper');
-var Logger = require('./node_modules/catberry/browser/Logger.js');
+var Catberry = require('./node_modules/catbee/dist/browser/Catberry.js');
+var BootstrapperBase = require('./node_modules/catbee/dist/lib/base/BootstrapperBase.js');
+var ModuleApiProvider = require('./node_modules/catbee/dist/browser/providers/ModuleApiProvider');
+var CookieWrapper = require('./node_modules/catbee/dist/browser/CookieWrapper');
+var Logger = require('./node_modules/catbee/dist/browser/Logger.js');
 var util = require('util');
 
 /*eslint-disable */

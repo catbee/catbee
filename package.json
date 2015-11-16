@@ -1,6 +1,6 @@
 {
   "name": "catbee",
-  "version": "1.0.0",
+  "version": "1.0.0-rc1",
   "author": {
     "name": "Kirill Kaysarov",
     "email": "k.kaysarov@2gis.ru"
@@ -16,13 +16,6 @@
     "morphdom",
     "tree"
   ],
-  "bugs": {
-    "url": "https://github.com/markuplab/catbee/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:markuplab/catbee.git"
-  },
   "main": "./dist/index",
   "browser": {
     "./dist/lib/Bootstrapper.js": "__BrowserBundle.js",
@@ -70,5 +63,13 @@
     "coverage": "node ./node_modules/.bin/lab -T node_modules/babel-lab -r html -o coverage.html -S -l",
     "build": "node ./node_modules/.bin/babel lib -d dist/lib && node ./node_modules/.bin/babel browser -d dist/browser",
     "prepublish": "npm run build"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/markuplab/catbee/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:markuplab/catbee.git"
   }
 }

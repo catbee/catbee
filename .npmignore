@@ -6,3 +6,7 @@ node_modules
 test/
 *.log
 .eslintrc
+coverage.html
+.idea
+.eslintignore
+.editorconfig
