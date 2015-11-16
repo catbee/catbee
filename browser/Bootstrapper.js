@@ -2,11 +2,11 @@
  * __BrowserBundle.js template file
  * @reference builders/BootstrapperBuilder
  */
-var Catberry = require('../../browser/Catberry.js');
-var BootstrapperBase = require('../../lib/base/BootstrapperBase.js');
-var ModuleApiProvider = require('../../browser/providers/ModuleApiProvider');
-var CookieWrapper = require('../../browser/CookieWrapper');
-var Logger = require('../../browser/Logger.js');
+var Catberry = require('./node_modules/catberry/browser/Catberry.js');
+var BootstrapperBase = require('./node_modules/catberry/lib/base/BootstrapperBase.js');
+var ModuleApiProvider = require('./node_modules/catberry/browser/providers/ModuleApiProvider');
+var CookieWrapper = require('./node_modules/catberry/browser/CookieWrapper');
+var Logger = require('./node_modules/catberry/browser/Logger.js');
 var util = require('util');
 
 /*eslint-disable */
@@ -16,7 +16,7 @@ var signals = [ /**__signals**/ ];
 var routes = '__routes' || [];
 /*eslint-enable */
 
-const DEBUG_DOCUMENT_UPDATED = 'Document updated (%d store(s) changed)';
+const DEBUG_DOCUMENT_UPDATED = 'Document updated (%d watcher(s) changed)';
 const DEBUG_COMPONENT_BOUND = 'Component "%s" is bound';
 const DEBUG_COMPONENT_UNBOUND = 'Component "%s" is unbound';
 

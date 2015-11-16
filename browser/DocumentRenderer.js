@@ -68,6 +68,11 @@ class DocumentRenderer extends DocumentRendererBase {
     this._window = $serviceLocator.resolve('window');
     this._logger = $serviceLocator.resolve('logger');
     this._config = $serviceLocator.resolve('config');
+
+    this._eventBus.on('watcherChanged', watcherName => {
+      this._currentChangedWatchers[watcherName] = true;
+      this._updateWatchedComponents();
+    });
   }
 
   /**
@@ -245,15 +250,9 @@ class DocumentRenderer extends DocumentRendererBase {
         renderingContext.renderedIds[id] = true;
 
         if (!instance) {
-          var context = this._getComponentContext(component, element);
-          component.constructor.prototype.$context = context;
+          component.constructor.prototype.$context = this._getComponentContext(component, element);
           instance = this._serviceLocator.resolveInstance(component.constructor, renderingContext.config);
           instance.$context = component.constructor.prototype.$context;
-
-          if (context.watcher) {
-            this._bindWatcher(id, context.watcher);
-          }
-
           this._componentInstances[id] = instance;
         }
 
@@ -271,8 +270,7 @@ class DocumentRenderer extends DocumentRendererBase {
           .then(() => {
             // we need unbind the whole hierarchy only at
             // the beginning and not for new elements
-            if (!(id in renderingContext.rootIds) ||
-              !hadChildren) {
+            if (!(id in renderingContext.rootIds) || !hadChildren) {
               return;
             }
 
@@ -281,11 +279,7 @@ class DocumentRenderer extends DocumentRendererBase {
           .catch(reason => this._eventBus.emit('error', reason))
           .then(() => {
             if (instance.$context.element !== element) {
-              var context = this._getComponentContext(component, element);
-              instance.$context = context;
-              if (context.watcher) {
-                this._bindWatcher(id, context.watcher);
-              }
+              instance.$context = this._getComponentContext(component, element);
             }
             var renderMethod = moduleHelper.getMethodToInvoke(instance, 'render');
             return moduleHelper.getSafePromise(renderMethod);
@@ -324,7 +318,16 @@ class DocumentRenderer extends DocumentRendererBase {
             eventArgs.hrTime = hrTimeHelper.get(startTime);
             eventArgs.time = hrTimeHelper.toMilliseconds(eventArgs.hrTime);
             this._eventBus.emit('componentRendered', eventArgs);
-            return this._bindComponent(element);
+            return this._bindComponent(element)
+              .then(() => {
+                var context = instance.$context;
+
+                if (!context.watcher) {
+                  return Promise.resolve();
+                }
+
+                return this._bindWatcher(id, context.watcher);
+              });
           })
           .then(() => {
             // collecting garbage only when
@@ -719,7 +722,34 @@ class DocumentRenderer extends DocumentRendererBase {
    * @private
    */
   _updateWatchedComponents () {
-    // need to implement...
+    if (this._isUpdating) {
+      return Promise.resolve();
+    }
+
+    this._isUpdating = true;
+
+    var changedWatchers = Object.keys(this._currentChangedWatchers);
+    if (changedWatchers.length === 0) {
+      this._isUpdating = false;
+      return Promise.resolve();
+    }
+
+    this._currentChangedWatchers = Object.create(null);
+    var renderingContext = this._createRenderingContext(changedWatchers);
+
+    var promises = renderingContext.roots.map(root => {
+      var id = this._getId(root);
+      renderingContext.rootIds[id] = true;
+      this.renderComponent(root, renderingContext);
+    });
+
+    return Promise.all(promises)
+      .catch(reason => this._eventBus.emit('error', reason))
+      .then(() => {
+        this._isUpdating = false;
+        this._eventBus.emit('documentUpdated', changedWatchers);
+        return this._updateWatchedComponents();
+      });
   }
 
   /**
@@ -732,11 +762,10 @@ class DocumentRenderer extends DocumentRendererBase {
     if (!newHead) {
       return;
     }
-    var self = this;
 
-    var map = this._getHeadMap(head.childNodes),
-      current, i, key, oldKey, oldItem,
-      sameMetaElements = Object.create(null);
+    var map = this._getHeadMap(head.childNodes)
+    var sameMetaElements = Object.create(null);
+    var current, i, key, oldKey, oldItem;
 
     for (i = 0; i < newHead.childNodes.length; i++) {
       current = newHead.childNodes[i];
@@ -768,7 +797,7 @@ class DocumentRenderer extends DocumentRendererBase {
         case TAG_NAMES.STYLE:
         case TAG_NAMES.LINK:
         case TAG_NAMES.SCRIPT:
-          key = self._getNodeKey(current);
+          key = this._getNodeKey(current);
           if (!(key in map[current.nodeName])) {
             head.appendChild(current);
             i--;
@@ -777,7 +806,7 @@ class DocumentRenderer extends DocumentRendererBase {
         // meta and other elements can be deleted
         // but we should not delete and append same elements
         default:
-          key = self._getNodeKey(current);
+          key = this._getNodeKey(current);
           if (key in map[current.nodeName]) {
             sameMetaElements[key] = true;
           } else {
@@ -791,7 +820,7 @@ class DocumentRenderer extends DocumentRendererBase {
     if (TAG_NAMES.META in map) {
       // remove meta tags which a not in a new head state
       Object.keys(map[TAG_NAMES.META])
-        .forEach(function (metaKey) {
+        .forEach(metaKey => {
           if (metaKey in sameMetaElements) {
             return;
           }
@@ -810,16 +839,15 @@ class DocumentRenderer extends DocumentRendererBase {
   _getHeadMap  (headChildren) {
     // Create map of <meta>, <link>, <style> and <script> tags
     // by unique keys that contain attributes and content
-    var map = Object.create(null),
-      i, current,
-      self = this;
+    var map = Object.create(null);
+    var i, current;
 
     for (i = 0; i < headChildren.length; i++) {
       current = headChildren[i];
       if (!(current.nodeName in map)) {
         map[current.nodeName] = Object.create(null);
       }
-      map[current.nodeName][self._getNodeKey(current)] = current;
+      map[current.nodeName][this._getNodeKey(current)] = current;
     }
     return map;
   }
@@ -878,10 +906,6 @@ class DocumentRenderer extends DocumentRendererBase {
         var instance = this._serviceLocator.resolveInstance(constructor, this._config);
         instance.$context = constructor.prototype.$context;
 
-        if (context.watcher) {
-          this._bindWatcher(id, context.watcher);
-        }
-
         this._componentElements[id] = current;
         this._componentInstances[id] = instance;
 
@@ -891,7 +915,14 @@ class DocumentRenderer extends DocumentRendererBase {
           context: instance.$context
         });
 
-        return this._bindComponent(current);
+        return this._bindComponent(current)
+          .then(() => {
+            if (!context.watcher) {
+              return Promise.resolve();
+            }
+
+            return this._bindWatcher(id, context.watcher);
+          });
       })
       .then(() => {
         if (elements.length > 0) {
@@ -960,13 +991,72 @@ class DocumentRenderer extends DocumentRendererBase {
   }
 
   /**
-   * Finds all rendering roots on page for all changed stores.
+   * Finds all rendering roots on page for all changed watchers.
    * @param {Array} changedWatcherNames List of store names which has been changed.
    * @returns {Array<Element>} HTML elements that are rendering roots.
    * @private
    */
   _findRenderingRoots (changedWatcherNames) {
-    // need to implement...
+    var headWatcher = this._window.document.head.getAttribute(moduleHelper.ATTRIBUTE_WATCHER) ? '$$head' : null;
+    var components = this._componentLoader.getComponentsByNames();
+    var componentsElements = Object.create(null);
+    var watcherNamesSet = Object.create(null);
+    var rootsSet = Object.create(null);
+    var roots = [];
+
+    // we should find all components and then looking for roots
+    changedWatcherNames
+      .forEach(watcherName => {
+        watcherNamesSet[watcherName] = true;
+        componentsElements[watcherName] = this._window.document
+          .querySelectorAll(`[${moduleHelper.ATTRIBUTE_ID}="${watcherName}"]`);
+      });
+
+    if (moduleHelper.HEAD_COMPONENT_NAME in components && headWatcher in watcherNamesSet) {
+      rootsSet[this._getId(this._window.document.head)] = true;
+      roots.push(this._window.document.head);
+    }
+
+    changedWatcherNames
+      .forEach(watcherName => {
+        var current, currentId,
+          lastRoot, lastRootId,
+          currentWatcher, currentComponentName;
+
+        for (var i = 0; i < componentsElements[watcherName].length; i++) {
+          current = componentsElements[watcherName][i];
+          currentId = componentsElements[watcherName][i].getAttribute(moduleHelper.ATTRIBUTE_ID);
+          lastRoot = current;
+          lastRootId = currentId;
+          currentComponentName = moduleHelper.getOriginalComponentName(current.tagName);
+
+          while (current.parentElement) {
+            current = current.parentElement;
+            currentId = this._getId(current);
+            currentWatcher = current.getAttribute(moduleHelper.ATTRIBUTE_WATCHER);
+
+            // watcher did not change state
+            if (!currentWatcher || !(currentWatcher in watcherNamesSet)) {
+              continue;
+            }
+
+            // is not an active component
+            if (!(currentComponentName in components)) {
+              continue;
+            }
+
+            lastRoot = current;
+            lastRootId = currentId;
+          }
+          if (lastRootId in rootsSet) {
+            continue;
+          }
+          rootsSet[lastRootId] = true;
+          roots.push(lastRoot);
+        }
+      });
+
+    return roots;
   }
 
   /**
@@ -1037,15 +1127,15 @@ class DocumentRenderer extends DocumentRendererBase {
    * @private
    */
   _bindWatcher (id, watcher) {
-    // We need wait when all modifications in tree will be end
-    // Because Baobab use setTimeout version of nextTick, we also must use same method
-    setTimeout(() => {
-      this._currentWatchersSet[id] = watcher;
-      watcher.on('update', () => {
-        this._currentChangedWatchers[id] = watcher;
-        this._updateWatchedComponents();
-      });
-    }, 0);
+    return new Promise(resolve => {
+      // We need wait when all modifications in tree will be end
+      // Because Baobab use setTimeout version of nextTick, we also must use same method
+      setTimeout(() => {
+        this._currentWatchersSet[id] = watcher;
+        watcher.on('update', () => this._eventBus.emit('watcherChanged', id));
+        resolve();
+      }, 0);
+    })
   }
 
   /**
@@ -1054,7 +1144,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * @private
    */
   _unbindWatcher (id) {
-    this._currentWatchersSet[id].release();
+    this._currentWatchersSet[id].off('update');
     delete this._currentChangedWatchers[id];
   }
 }

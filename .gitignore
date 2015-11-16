@@ -12,3 +12,6 @@ coverage.html
 
 ehthumbs.db
 Thumbs.db
+
+dist/browser
+dist/lib
