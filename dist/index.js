@@ -1,1 +1,1 @@
-require('./lib/Bootstrapper');
+module.exports = require('./lib/Bootstrapper');
