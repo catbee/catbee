@@ -29,15 +29,15 @@ class Catberry extends CatberryBase {
    * @returns {Promise} Promise for nothing.
    */
   startWhenReady () {
-    if (window.catberry) {
+    if (window.catbee) {
       return Promise.resolve();
     }
 
-    return new Promise((fulfill) => {
+    return new Promise(resolve => {
       window.document.addEventListener('DOMContentLoaded', () => {
         this.wrapDocument();
-        window.catberry = this;
-        fulfill();
+        window.catbee = this;
+        resolve();
       });
     });
   }

@@ -1185,8 +1185,6 @@ function createRoutingContext(config, watchers, components, actions = []) {
   locator.register('documentRenderer', DocumentRenderer, config, true);
   locator.register('moduleApiProvider', ModuleApiProvider, config, true);
 
-  var signalFactory = locator.resolveInstance(State);
-
   locator.registerInstance('componentLoader', {
     load: function () {
       return Promise.resolve();
@@ -1207,10 +1205,14 @@ function createRoutingContext(config, watchers, components, actions = []) {
 
   locator.registerInstance('signalLoader', {
     load: function () {
+      return Promise.resolve();
+    },
+    getSignalsByNames: function () {
       var name = 'test';
       var fn = appstate.create(name, actions);
-      locator.registerInstance('signal', { fn, name });
-      return Promise.resolve();
+      var signals = Object.create(null);
+      signals[name] = fn;
+      return signals;
     }
   });
 
