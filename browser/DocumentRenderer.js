@@ -183,6 +183,14 @@ class DocumentRenderer extends DocumentRendererBase {
         return this._state.runSignal(urlState.signal, urlState.args);
       })
       .then(() => {
+        // We must wait when state will be updated
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve();
+          }, 0)
+        });
+      })
+      .then(() => {
         var components = this._componentLoader.getComponentsByNames();
         var elements = this._findComponents(this._window.document.body, components, true);
 
@@ -1127,15 +1135,9 @@ class DocumentRenderer extends DocumentRendererBase {
    * @private
    */
   _bindWatcher (id, watcher) {
-    return new Promise(resolve => {
-      // We need wait when all modifications in tree will be end
-      // Because Baobab use setTimeout version of nextTick, we also must use same method
-      setTimeout(() => {
-        this._currentWatchersSet[id] = watcher;
-        watcher.on('update', () => this._eventBus.emit('watcherChanged', id));
-        resolve();
-      }, 0);
-    })
+    this._currentWatchersSet[id] = watcher;
+    watcher.on('update', () => this._eventBus.emit('watcherChanged', id));
+    return Promise.resolve();
   }
 
   /**
