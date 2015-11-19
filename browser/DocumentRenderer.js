@@ -183,14 +183,6 @@ class DocumentRenderer extends DocumentRendererBase {
         return this._state.runSignal(urlState.signal, urlState.args);
       })
       .then(() => {
-        // We must wait when state will be updated
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve();
-          }, 0)
-        });
-      })
-      .then(() => {
         var components = this._componentLoader.getComponentsByNames();
         var elements = this._findComponents(this._window.document.body, components, true);
 
