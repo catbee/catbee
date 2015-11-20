@@ -1138,7 +1138,13 @@ class DocumentRenderer extends DocumentRendererBase {
    * @private
    */
   _unbindWatcher (id) {
-    this._currentWatchersSet[id].off('update');
+    var watcher = this._currentWatchersSet[id];
+
+    if (!watcher) {
+      return;
+    }
+
+    watcher.off('update');
     delete this._currentChangedWatchers[id];
   }
 }
