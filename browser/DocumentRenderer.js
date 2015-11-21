@@ -71,7 +71,11 @@ class DocumentRenderer extends DocumentRendererBase {
 
     this._eventBus.on('watcherChanged', watcherName => {
       this._currentChangedWatchers[watcherName] = true;
-      this._updateWatchedComponents();
+
+      // We must wait next tick, before we run update.
+      // It's allow collect all sync updates events
+      Promise.resolve()
+        .then(() => this._updateWatchedComponents())
     });
   }
 
@@ -146,25 +150,11 @@ class DocumentRenderer extends DocumentRendererBase {
   _currentWatchersSet = null;
 
   /**
-   * Current promise for rendered page.
-   * @type {Promise}
-   * @private
-   */
-  _renderedPromise = null;
-
-  /**
    * Current state of updating components.
    * @type {boolean}
    * @private
    */
   _isUpdating = false;
-
-  /**
-   * Current awaiting routing.
-   * @type {{state: Object, routingContext: Object}}
-   * @private
-   */
-  _awaitingRouting = null;
 
   /**
    * Sets the initial state of the application.
@@ -204,8 +194,9 @@ class DocumentRenderer extends DocumentRendererBase {
       .then(() => {
         this._currentRoutingContext = routingContext;
         this._currentUrlState = urlState;
+
+        return this._state.runSignal(urlState.signal, urlState.args);
       })
-      .then(() => this._state.runSignal(urlState.signal, urlState.args))
       .catch(reason => this._eventBus.emit('error', reason));
   }
 
@@ -221,9 +212,7 @@ class DocumentRenderer extends DocumentRendererBase {
 
         var id = this._getId(element);
         if (!id) {
-          this._logger.warn(
-            util.format(WARN_ID_NOT_SPECIFIED, componentName)
-          );
+          this._logger.warn(util.format(WARN_ID_NOT_SPECIFIED, componentName));
           return;
         }
 
@@ -241,9 +230,7 @@ class DocumentRenderer extends DocumentRendererBase {
         }
 
         if (id in renderingContext.renderedIds) {
-          this._logger.warn(
-            util.format(WARN_SAME_ID, id, componentName)
-          );
+          this._logger.warn(util.format(WARN_SAME_ID, id, componentName));
           return;
         }
 
@@ -1021,7 +1008,7 @@ class DocumentRenderer extends DocumentRendererBase {
       .forEach(watcherName => {
         var current, currentId,
           lastRoot, lastRootId,
-          currentWatcher, currentComponentName;
+          currentWatcher, hasWatcherAttribute, currentComponentName;
 
         for (var i = 0; i < componentsElements[watcherName].length; i++) {
           current = componentsElements[watcherName][i];
@@ -1033,10 +1020,11 @@ class DocumentRenderer extends DocumentRendererBase {
           while (current.parentElement) {
             current = current.parentElement;
             currentId = this._getId(current);
-            currentWatcher = current.getAttribute(moduleHelper.ATTRIBUTE_WATCHER);
+            currentWatcher = current.getAttribute(moduleHelper.ATTRIBUTE_ID);
+            hasWatcherAttribute = current.getAttribute(moduleHelper.ATTRIBUTE_WATCHER);
 
             // watcher did not change state
-            if (!currentWatcher || !(currentWatcher in watcherNamesSet)) {
+            if (!hasWatcherAttribute || !(currentWatcher in watcherNamesSet)) {
               continue;
             }
 
@@ -1129,7 +1117,7 @@ class DocumentRenderer extends DocumentRendererBase {
   _bindWatcher (id, watcher) {
     this._currentWatchersSet[id] = watcher;
     watcher.on('update', () => this._eventBus.emit('watcherChanged', id));
-    return Promise.resolve();
+    return Promise.resolve(null);
   }
 
   /**

@@ -1171,6 +1171,210 @@ lab.experiment('browser/DocumentRenderer', function () {
     });
   });
 
+  lab.experiment('#updateState', function () {
+    lab.test('should update all components that depend on changed watchers in descending order', function (done) {
+      var renders = [];
+
+      class Component1 {
+        render = function () {
+          renders.push(this.$context.attributes.id);
+          return this.$context;
+        };
+      }
+      class Component2 {
+        render = function () {
+          renders.push(this.$context.attributes.id);
+          return this.$context;
+        };
+      }
+      class Component3 {
+        render () {
+          renders.push(this.$context.attributes.id);
+          return this.$context;
+        };
+      }
+
+      var components = [
+        {
+          name: 'test1',
+          constructor: Component1,
+          templateSource: '<div>Hello from test1</div>' +
+          '<cat-test2 id="unique2"/>'
+        },
+        {
+          name: 'test2',
+          constructor: Component2,
+          templateSource: '<span>' +
+          'Hello from test2' +
+          '<cat-test3 id="unique3"/>' +
+          '</span>'
+        },
+        {
+          name: 'test3',
+          constructor: Component3,
+          templateSource: 'Hello from test3'
+        }
+      ];
+
+      var watchers = {
+        watcher1: {
+          update: ['update']
+        },
+        watcher2: {
+          update: ['update']
+        }
+      };
+
+      var html = `
+        <cat-test1 id="unique1" watcher="watcher1">
+          test1<br>
+          <div>Hello from test1</div>
+          <cat-test2 id="unique2">test2<br>
+            <span>
+              Hello from test2
+              <cat-test3 id="unique3" watcher="watcher2">test3<br>Hello from test3</cat-test3>
+            </span>
+          </cat-test2>
+        </cat-test1>
+        <cat-test3 id="unique4" watcher="watcher1">
+          test3<br>
+          Hello from test3
+        </cat-test3>`;
+
+      var locator = createLocator(components, {}, watchers, [function (args, state) {
+        state.set('update', 'initial');
+      }]);
+
+      var eventBus = locator.resolve('eventBus');
+      eventBus.on('error', done);
+
+      jsdom.env({
+        html: html,
+        done: function (errors, window) {
+          locator.registerInstance('window', window);
+          var renderer = locator.resolveInstance(DocumentRenderer);
+          renderer.initWithState({ signal: 'test' }, {})
+            .then(() => {
+              assert.strictEqual(renders.length, 0);
+              return renderer.updateState({ signal: 'update' }, {});
+            })
+            .then(() => {
+              // We need wait some time to all updates called
+              setTimeout(function () {
+                try {
+                  assert.strictEqual(renders.length, 4);
+                  assert.strictEqual(renders[0], 'unique1');
+                  assert.strictEqual(renders[1], 'unique4');
+                  assert.strictEqual(renders[2], 'unique2');
+                  assert.strictEqual(renders[3], 'unique3');
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+            });
+        }
+      });
+    });
+
+    lab.test('should do nothing if nothing changes', function (done) {
+      var renders = [];
+
+      class Component1 {
+        render = function () {
+          renders.push(this.$context.attributes.id);
+          return this.$context;
+        };
+      }
+      class Component2 {
+        render = function () {
+          renders.push(this.$context.attributes.id);
+          return this.$context;
+        };
+      }
+      class Component3 {
+        render () {
+          renders.push(this.$context.attributes.id);
+          return this.$context;
+        };
+      }
+
+      var components = [
+        {
+          name: 'test1',
+          constructor: Component1,
+          templateSource: '<div>Hello from test1</div>' +
+          '<cat-test2 id="unique2"/>'
+        },
+        {
+          name: 'test2',
+          constructor: Component2,
+          templateSource: '<span>' +
+          'Hello from test2' +
+          '<cat-test3 id="unique3"/>' +
+          '</span>'
+        },
+        {
+          name: 'test3',
+          constructor: Component3,
+          templateSource: 'Hello from test3'
+        }
+      ];
+
+      var watchers = {
+        watcher1: {
+          update: ['undefinedField']
+        },
+        watcher2: {
+          update: ['undefinedField']
+        }
+      };
+
+      var html = `
+        <cat-test1 id="unique1" watcher="watcher1">
+          test1<br>
+          <div>Hello from test1</div>
+          <cat-test2 id="unique2">test2<br>
+            <span>
+              Hello from test2
+              <cat-test3 id="unique3" watcher="watcher2">test3<br>Hello from test3</cat-test3>
+            </span>
+          </cat-test2>
+        </cat-test1>
+        <cat-test3 id="unique4" watcher="watcher1">
+          test3<br>
+          Hello from test3
+        </cat-test3>`;
+
+      var locator = createLocator(components, {}, watchers, [function (args, state) {
+        state.set('update', 'initial');
+      }]);
+
+      var eventBus = locator.resolve('eventBus');
+      eventBus.on('error', done);
+
+      jsdom.env({
+        html: html,
+        done: function (errors, window) {
+          locator.registerInstance('window', window);
+          var renderer = locator.resolveInstance(DocumentRenderer);
+          renderer.initWithState({ signal: 'test' }, {})
+            .then(() => {
+              assert.strictEqual(renders.length, 0);
+              return renderer.updateState({ signal: 'update' }, {});
+            })
+            .then(() => {
+              // We need wait some time to all updates called
+              setTimeout(function () {
+                assert.strictEqual(renders.length, 0);
+                done();
+              }, 10);
+            });
+        }
+      });
+    });
+  });
+
   lab.experiment('#createComponent', function () {
     lab.test('should properly create and render component', function (done) {
       var components = [
@@ -1558,8 +1762,12 @@ function createLocator(components, config, watchers, actions = []) {
     getSignalsByNames: function () {
       var name = 'test';
       var fn = appstate.create(name, actions);
+
       var signals = Object.create(null);
       signals[name] = fn;
+
+      var update = appstate.create('update', [(args, state) => { state.set('update', 'update')}]);
+      signals['update'] = update;
       return signals;
     }
   });
