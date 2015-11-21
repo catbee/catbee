@@ -82,7 +82,7 @@ lab.experiment('browser/DocumentRenderer', function () {
         done: function (errors, window) {
           locator.registerInstance('window', window);
           var renderer = locator.resolveInstance(DocumentRenderer);
-          renderer.initWithState({}, {})
+          renderer.initWithState({ signal: 'test' }, {})
             .then(function () {
               assert.deepEqual(bindCalls, expected);
               done();
