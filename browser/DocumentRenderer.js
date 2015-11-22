@@ -172,6 +172,7 @@ class DocumentRenderer extends DocumentRendererBase {
         this._state = this._serviceLocator.resolveInstance(State);
         return this._state.runSignal(urlState.signal, urlState.args);
       })
+      .then(() => new Promise(resolve => setTimeout(resolve, 0))) // We need wait nextTick before all transactions end
       .then(() => {
         var components = this._componentLoader.getComponentsByNames();
         var elements = this._findComponents(this._window.document.body, components, true);

@@ -57,10 +57,7 @@ class SignalLoader extends LoaderBase {
                 }
 
                 if (signal.name in result) {
-                  this._logger.warn(util.format(
-                    WARN_DUPLICATE_SIGNAL_NAME, signal.name
-                  ));
-
+                  this._logger.warn(util.format(WARN_DUPLICATE_SIGNAL_NAME, signal.name));
                   return;
                 }
 
@@ -68,10 +65,11 @@ class SignalLoader extends LoaderBase {
               });
 
               this._loadedSignals = result;
-              this._eventBus.emit('allSignalsLoaded', result);
               return this._loadedSignals;
             });
         });
+
+        this._eventBus.emit('allSignalsLoaded', this._loadedSignals);
       });
   }
 
@@ -86,13 +84,15 @@ class SignalLoader extends LoaderBase {
         var actions = file[name];
         return this._applyTransforms(actions)
           .then((transformedActions) => {
-            var signal = {
-              name,
-              fn: appstate.create(name, transformedActions)
-            };
+            try {
+              var fn = appstate.create(name, transformedActions);
+              var signal = { name, fn };
 
-            this._eventBus.emit('signalLoaded', signal);
-            return signal;
+              this._eventBus.emit('signalLoaded', signal);
+              return signal;
+            } catch (e) {
+              this._eventBus.emit('error', e);
+            }
           });
       });
 
