@@ -48,8 +48,8 @@ class SignalLoader extends LoaderBase {
       .then(() => {
         var signalsFiles = this._serviceLocator.resolveAll('signal');
 
-        signalsFiles.forEach(file => {
-          this._getSignalsFromFile(file.definition)
+        var promises = signalsFiles.map(file => {
+          return this._getSignalsFromFile(file.definition)
             .then(signals => {
               signals.forEach(signal => {
                 if (!signal || typeof (signal) !== 'object') {
@@ -69,7 +69,8 @@ class SignalLoader extends LoaderBase {
             });
         });
 
-        this._eventBus.emit('allSignalsLoaded', this._loadedSignals);
+        return Promise.all(promises)
+          .then(() => this._eventBus.emit('allSignalsLoaded', this._loadedSignals));
       });
   }
 
