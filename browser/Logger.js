@@ -9,13 +9,13 @@ var LoggerBase = require('../lib/base/LoggerBase');
  * @constructor
  */
 class Logger extends LoggerBase {
-  constructor ($config, $window, $uhr) {
+  constructor ($config) {
     super();
 
     this._config = $config;
     this._config.logger = this._config.logger || {};
-    this._window = $window;
-    this._uhr = $uhr;
+
+    this.addEnrichment((log) => log.from = 'Browser');
 
     this._setLevels(this._config.logger.levels);
 
@@ -166,12 +166,11 @@ class Logger extends LoggerBase {
     var { message, fields } = this._errorFormatter(error);
     var meta = Object.assign({}, fields, data);
 
-    this._request({
-      message, ...meta,
-      from: 'Client',
-      userHRef: this._window.location.href,
-      userAgent: this._window.navigator.userAgent
-    });
+    var log = { message, ...meta };
+
+    this._enrichLog(log, level);
+
+    this._request(log);
   }
 
   _request (data) {
