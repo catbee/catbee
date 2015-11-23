@@ -77,6 +77,7 @@ class SignalLoader extends LoaderBase {
   /**
    * Get signals file from memory, and save signals from it
    * @param {Object} file
+   * @return {Promise}
    * @private
    */
   _getSignalsFromFile (file) {

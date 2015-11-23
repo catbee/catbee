@@ -1,6 +1,5 @@
 var moduleHelper = require('../../lib/helpers/moduleHelper');
 var LoaderBase = require('../../lib/base/LoaderBase');
-var util = require('util');
 
 class ComponentLoader extends LoaderBase {
   constructor ($serviceLocator) {

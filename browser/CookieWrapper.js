@@ -1,4 +1,3 @@
-var util = require('util');
 var CookieWrapperBase = require('../lib/base/CookieWrapperBase');
 
 class CookieWrapper extends CookieWrapperBase {
@@ -18,11 +17,11 @@ class CookieWrapper extends CookieWrapperBase {
    * Gets current cookie string.
    * @returns {string} Cookie string.
    */
-  getCookieString = function () {
+  getCookieString () {
     return this._window.document.cookie ?
       this._window.document.cookie.toString() :
       '';
-  };
+  }
 
   /**
    * Sets cookie to this wrapper.
@@ -41,7 +40,7 @@ class CookieWrapper extends CookieWrapperBase {
     var cookie = this._convertToCookieSetup(cookieSetup);
     this._window.document.cookie = cookie;
     return cookie;
-  };
+  }
 }
 
 module.exports = CookieWrapper;

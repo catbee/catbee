@@ -71,6 +71,7 @@ class WatcherLoader {
    * Get valid watchers
    * @param {String} name
    * @param {Object} definition
+   * @return {Promise}
    * @private
    */
   _getWatcher ({ name, definition }) {
@@ -78,9 +79,9 @@ class WatcherLoader {
       var watcher = { name, definition };
       this._eventBus.emit('watcherLoaded', watcher);
       return Promise.resolve(watcher);
-    } else {
-      return Promise.resolve(null);
     }
+
+    return Promise.resolve(null);
   }
 }
 

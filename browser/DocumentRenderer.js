@@ -75,7 +75,7 @@ class DocumentRenderer extends DocumentRendererBase {
       // We must wait next tick, before we run update.
       // It's allow collect all sync updates events
       Promise.resolve()
-        .then(() => this._updateWatchedComponents())
+        .then(() => this._updateWatchedComponents());
     });
   }
 
@@ -205,6 +205,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * Renders component into HTML element.
    * @param {Element} element HTML element of component
    * @param {Object?} renderingContext Rendering context for group rendering.
+   * @returns {Promise}
    */
   renderComponent (element, renderingContext) {
     return this._getPromiseForReadyState()
@@ -214,7 +215,7 @@ class DocumentRenderer extends DocumentRendererBase {
         var id = this._getId(element);
         if (!id) {
           this._logger.warn(util.format(WARN_ID_NOT_SPECIFIED, componentName));
-          return;
+          return Promise.resolve();
         }
 
         if (!renderingContext) {
@@ -227,12 +228,12 @@ class DocumentRenderer extends DocumentRendererBase {
         var instance = this._componentInstances[id];
 
         if (!component) {
-          return;
+          return Promise.resolve();
         }
 
         if (id in renderingContext.renderedIds) {
           this._logger.warn(util.format(WARN_SAME_ID, id, componentName));
-          return;
+          return Promise.resolve();
         }
 
         renderingContext.renderedIds[id] = true;
@@ -259,7 +260,7 @@ class DocumentRenderer extends DocumentRendererBase {
             // we need unbind the whole hierarchy only at
             // the beginning and not for new elements
             if (!(id in renderingContext.rootIds) || !hadChildren) {
-              return;
+              return Promise.resolve();
             }
 
             return this._unbindAll(element, renderingContext);
@@ -277,14 +278,14 @@ class DocumentRenderer extends DocumentRendererBase {
           .then(html => {
             var isHead = element.tagName === TAG_NAMES.HEAD;
             if (html === '' && isHead) {
-              return;
+              return Promise.resolve();
             }
             var tmpElement = this._createTemporaryElement(element);
             tmpElement.innerHTML = html;
 
             if (isHead) {
               this._mergeHead(element, tmpElement);
-              return;
+              return Promise.resolve();
             }
 
             morphdom(element, tmpElement, {
@@ -335,7 +336,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * @param {string} id Component ID.
    * @returns {Object|null} Component instance.
    */
-  getComponentById  (id) {
+  getComponentById (id) {
     return this._componentInstances[id] || null;
   }
 
@@ -418,7 +419,7 @@ class DocumentRenderer extends DocumentRendererBase {
           .forEach(attributeName => element.setAttribute(attributeName, attributes[attributeName]));
 
         return this.renderComponent(element)
-          .then(function () {
+          .then(() => {
             return element;
           });
       });
@@ -593,19 +594,20 @@ class DocumentRenderer extends DocumentRendererBase {
    */
   _createBindingHandler (componentRoot, selectorHandlers) {
     var selectors = Object.keys(selectorHandlers);
-    return function (event) {
-      var dispatchedEvent = createCustomEvent(event, function () {
-          return element;
-        }),
-        element = event.target,
-        targetMatches = getMatchesMethod(element),
-        isHandled = selectors.some(function (selector) {
-          if (targetMatches(selector)) {
-            selectorHandlers[selector](dispatchedEvent);
-            return true;
-          }
-          return false;
-        });
+    return (event) => {
+      var element = event.target;
+      var dispatchedEvent = createCustomEvent(event, () => {
+        return element;
+      });
+      var targetMatches = getMatchesMethod(element);
+      var isHandled = selectors.some(selector => {
+        if (targetMatches(selector)) {
+          selectorHandlers[selector](dispatchedEvent);
+          return true;
+        }
+        return false;
+      });
+
       if (isHandled || !event.bubbles) {
         return;
       }
@@ -633,6 +635,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * Checks if the element is a component.
    * @param {Object} components Current components.
    * @param {Element} element DOM element.
+   * @returns {Boolean}
    * @private
    */
   _isComponent (components, element) {
@@ -646,6 +649,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * @param {Element} element Root component HTML element to begin search with.
    * @param {Object} components Map of components by names.
    * @param {boolean} goInComponents Go inside nested components.
+   * @returns {Array}
    * @private
    */
   _findComponents (element, components, goInComponents) {
@@ -751,9 +755,12 @@ class DocumentRenderer extends DocumentRendererBase {
       return;
     }
 
-    var map = this._getHeadMap(head.childNodes)
+    var map = this._getHeadMap(head.childNodes);
     var sameMetaElements = Object.create(null);
+
+    /* eslint-disable */
     var current, i, key, oldKey, oldItem;
+    /* eslint-enable */
 
     for (i = 0; i < newHead.childNodes.length; i++) {
       current = newHead.childNodes[i];
@@ -763,45 +770,45 @@ class DocumentRenderer extends DocumentRendererBase {
       }
 
       switch (current.nodeName) {
-        // these elements can be only replaced
-        case TAG_NAMES.TITLE:
-        case TAG_NAMES.BASE:
-        case TAG_NAMES.NOSCRIPT:
-          key = this._getNodeKey(current);
-          oldItem = head.getElementsByTagName(current.nodeName)[0];
-          if (oldItem) {
-            oldKey = this._getNodeKey(oldItem);
-            head.replaceChild(current, oldItem);
-          } else {
-            head.appendChild(current);
-          }
+      // these elements can be only replaced
+      case TAG_NAMES.TITLE:
+      case TAG_NAMES.BASE:
+      case TAG_NAMES.NOSCRIPT:
+        key = this._getNodeKey(current);
+        oldItem = head.getElementsByTagName(current.nodeName)[0];
+        if (oldItem) {
+          oldKey = this._getNodeKey(oldItem);
+          head.replaceChild(current, oldItem);
+        } else {
+          head.appendChild(current);
+        }
           // when we do replace or append current is removed from newHead
           // therefore we need to decrement index
-          i--;
-          break;
+        i--;
+        break;
 
-        // these elements can not be deleted from head
-        // therefore we just add new elements that differs from existed
-        case TAG_NAMES.STYLE:
-        case TAG_NAMES.LINK:
-        case TAG_NAMES.SCRIPT:
-          key = this._getNodeKey(current);
-          if (!(key in map[current.nodeName])) {
-            head.appendChild(current);
-            i--;
-          }
-          break;
+      // these elements can not be deleted from head
+      // therefore we just add new elements that differs from existed
+      case TAG_NAMES.STYLE:
+      case TAG_NAMES.LINK:
+      case TAG_NAMES.SCRIPT:
+        key = this._getNodeKey(current);
+        if (!(key in map[current.nodeName])) {
+          head.appendChild(current);
+          i--;
+        }
+        break;
         // meta and other elements can be deleted
         // but we should not delete and append same elements
-        default:
-          key = this._getNodeKey(current);
-          if (key in map[current.nodeName]) {
-            sameMetaElements[key] = true;
-          } else {
-            head.appendChild(current);
-            i--;
-          }
-          break;
+      default:
+        key = this._getNodeKey(current);
+        if (key in map[current.nodeName]) {
+          sameMetaElements[key] = true;
+        } else {
+          head.appendChild(current);
+          i--;
+        }
+        break;
       }
     }
 
@@ -824,7 +831,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * @returns {Object} Map of HEAD elements.
    * @private
    */
-  _getHeadMap  (headChildren) {
+  _getHeadMap (headChildren) {
     // Create map of <meta>, <link>, <style> and <script> tags
     // by unique keys that contain attributes and content
     var map = Object.create(null);
@@ -847,8 +854,8 @@ class DocumentRenderer extends DocumentRendererBase {
    * @private
    */
   _getNodeKey (node) {
-    var current, i,
-      attributes = [];
+    var current, i;
+    var attributes = [];
 
     if (node.nodeType !== NODE_TYPES.ELEMENT_NODE) {
       return node.nodeValue || '';
@@ -870,6 +877,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * Does initial wrapping for every component on the page.
    * @param {Object} components Current components list.
    * @param {Array} elements Elements list.
+   * @return {Promise}
    * @private
    */
   _initialWrap (components, elements) {
@@ -880,12 +888,12 @@ class DocumentRenderer extends DocumentRendererBase {
         var id = this._getId(current);
 
         if (!id) {
-          return;
+          return Promise.resolve();
         }
 
         var componentName = moduleHelper.getOriginalComponentName(current.nodeName);
         if (!(componentName in components)) {
-          return;
+          return Promise.resolve();
         }
 
         var constructor = components[componentName].constructor;
@@ -966,7 +974,7 @@ class DocumentRenderer extends DocumentRendererBase {
       componentContext.watcher = this._state.getWatcher(watcherDefinition);
     }
 
-    componentContext.getWatcherData = function () {
+    componentContext.getWatcherData = () => {
       if (!componentContext.watcher) {
         return Promise.resolve();
       }
@@ -1101,8 +1109,9 @@ class DocumentRenderer extends DocumentRendererBase {
    * @private
    */
   _createTemporaryElement (element) {
-    var tmp = this._window.document.createElement(element.tagName),
-      attributes = element.attributes;
+    var tmp = this._window.document.createElement(element.tagName);
+    var attributes = element.attributes;
+
     for (var i = 0; i < attributes.length; i++) {
       tmp.setAttribute(attributes[i].name, attributes[i].value);
     }
@@ -1113,6 +1122,7 @@ class DocumentRenderer extends DocumentRendererBase {
    * Bind watcher to component
    * @param {String} id
    * @param {Watcher} watcher
+   * @return {Promise}
    * @private
    */
   _bindWatcher (id, watcher) {
@@ -1143,7 +1153,7 @@ class DocumentRenderer extends DocumentRendererBase {
  * @param {NamedNodeMap} attributes List of Element attributes.
  * @returns {Object} Map of attribute values by names.
  */
-function attributesToObject(attributes) {
+function attributesToObject (attributes) {
   var result = Object.create(null);
   for (var i = 0; i < attributes.length; i++) {
     result[attributes[i].name] = attributes[i].value;
@@ -1156,7 +1166,7 @@ function attributesToObject(attributes) {
  * @param {Element} element HTML element.
  * @returns {Function} "matches" method.
  */
-function getMatchesMethod(element) {
+function getMatchesMethod (element) {
   var method = (element.matches ||
   element.webkitMatchesSelector ||
   element.mozMatchesSelector ||
@@ -1172,17 +1182,19 @@ function getMatchesMethod(element) {
  * @param {Function} currentTargetGetter Getter for currentTarget.
  * @returns {Event} Wrapped event.
  */
-function createCustomEvent(event, currentTargetGetter) {
-  var catEvent = Object.create(event),
-    keys = [],
-    properties = {};
+function createCustomEvent (event, currentTargetGetter) {
+  var catEvent = Object.create(event);
+  var keys = [];
+  var properties = {};
+
   for (var key in event) {
     keys.push(key);
   }
-  keys.forEach(function (key) {
+
+  keys.forEach(key => {
     if (typeof (event[key]) === 'function') {
       properties[key] = {
-        get: function () {
+        get: () => {
           return event[key].bind(event);
         }
       };
@@ -1190,10 +1202,10 @@ function createCustomEvent(event, currentTargetGetter) {
     }
 
     properties[key] = {
-      get: function () {
+      get: () => {
         return event[key];
       },
-      set: function (value) {
+      set: (value) => {
         event[key] = value;
       }
     };

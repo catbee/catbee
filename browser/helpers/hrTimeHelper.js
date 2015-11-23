@@ -6,17 +6,20 @@ module.exports = {
    * @returns {Array} The high resolution time.
    */
   get: require('browser-process-hrtime'),
+
   /**
    * Converts the high resolution timestamp to text message.
    * @param {Array}
    * @returns {string} Time message.
    */
   toMessage: require('pretty-hrtime'),
+
   /**
    * Converts high resolution time to milliseconds number.
    * @param {Array} hrTime High resolution time tuple.
+   * @return {Number}
    */
-  toMilliseconds: function (hrTime) {
+  toMilliseconds: hrTime => {
     return hrTime[0] * 1e3 + Math.round(hrTime[1] / 1e6);
   }
 };
