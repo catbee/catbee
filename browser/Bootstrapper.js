@@ -49,7 +49,7 @@ class Bootstrapper extends BootstrapperBase {
     var eventBus = locator.resolve('eventBus');
     this._wrapEventsWithLogger(configObject, eventBus, logger);
 
-    window.onerror = function errorHandler(msg, uri, line) {
+    window.onerror = function errorHandler (msg, uri, line) {
       logger.fatal(uri + ':' + line + ' ' + msg);
       return true;
     };
@@ -69,16 +69,16 @@ class Bootstrapper extends BootstrapperBase {
     }
 
     eventBus
-      .on('documentUpdated', function (args) {
+      .on('documentUpdated', args => {
         logger.debug(util.format(DEBUG_DOCUMENT_UPDATED, args.length));
       })
-      .on('componentBound', function (args) {
+      .on('componentBound', args => {
         logger.debug(util.format(
           DEBUG_COMPONENT_BOUND,
           args.element.tagName + (args.id ? '#' + args.id : '')
         ));
       })
-      .on('componentUnbound', function (args) {
+      .on('componentUnbound', args => {
         logger.debug(util.format(
           DEBUG_COMPONENT_UNBOUND,
           args.element.tagName + (args.id ? '#' + args.id : '')

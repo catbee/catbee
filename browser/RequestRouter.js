@@ -1,4 +1,3 @@
-var util = require('util');
 var URI = require('catberry-uri').URI;
 
 const MOUSE_PRIMARY_KEY = 0;
@@ -107,7 +106,7 @@ class RequestRouter {
         var currentAuthority = this._location.authority ? this._location.authority.toString() : null;
 
         if (newLocation.scheme !== this._location.scheme || newAuthority !== currentAuthority) {
-          return;
+          return Promise.resolve();
         }
 
         // if only URI fragment is changed
@@ -116,7 +115,7 @@ class RequestRouter {
 
         if (newLocation.path === this._location.path && newQuery === currentQuery) {
           this._location = newLocation;
-          return;
+          return Promise.resolve();
         }
 
         return this._changeState(newLocation);
@@ -145,7 +144,7 @@ class RequestRouter {
           location.scheme !== this._location.scheme ||
           newAuthority !== currentAuthority) {
           this._window.location.assign(locationString);
-          return;
+          return Promise.resolve();
         }
 
         var args = this._urlArgsProvider.getArgsByUri(location);
@@ -153,7 +152,7 @@ class RequestRouter {
 
         if (!args || !signal) {
           this._window.location.assign(locationString);
-          return;
+          return Promise.resolve();
         }
 
         this._window.history.pushState({ isSilent }, '', locationString);
@@ -187,7 +186,7 @@ class RequestRouter {
 
         if (!args || !signal) {
           window.location.reload();
-          return;
+          return Promise.resolve();
         }
 
         return this._documentRenderer.updateState({ args, signal }, routingContext);
@@ -272,7 +271,7 @@ class RequestRouter {
  * @param {Node} element DOM element.
  * @returns {Node|null} The closest "A" element or null.
  */
-function closestLink(element) {
+function closestLink (element) {
   while (element && element.nodeName !== A_TAG_NAME && element.nodeName !== BODY_TAG_NAME) {
     element = element.parentNode;
   }
