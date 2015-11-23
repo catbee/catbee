@@ -46,8 +46,7 @@
     "uglify-js": "^2.6.1",
     "watchify": "^3.6.1",
     "winston": "^2.1.1",
-    "winston-console-formatter": "^0.1.0",
-    "winston-graylog2": "^0.2.3"
+    "winston-console-formatter": "^0.3.0"
   },
   "devDependencies": {
     "babel": "^5.6.14",
