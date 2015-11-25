@@ -9,13 +9,15 @@ var LoggerBase = require('../lib/base/LoggerBase');
  * @constructor
  */
 class Logger extends LoggerBase {
-  constructor ($config, $window, $uhr) {
+  constructor ($config) {
     super();
 
     this._config = $config;
     this._config.logger = this._config.logger || {};
-    this._window = $window;
-    this._uhr = $uhr;
+
+    this.addEnrichment((log) => log.from = 'Browser');
+
+    this.addTransport(Logger._consoleTransport);
 
     this._setLevels(this._config.logger.levels);
 
@@ -51,6 +53,48 @@ class Logger extends LoggerBase {
   _config = null;
 
   /**
+   * Browser logger transports.
+   *
+   * @type {Array}
+   * @private
+   */
+  _transports = [];
+
+  /**
+   * Add log messages transport.
+   *
+   * @param {function} transport
+   */
+  addTransport (transport) {
+    if (typeof transport !== 'function') {
+      this.error(new TypeError('transport must be a function'));
+      return;
+    }
+
+    this._transports.push(transport);
+  }
+
+  /**
+   * Add log messages transport.
+   *
+   * @param {function} transport
+   */
+  removeTransport (transport) {
+    var index = this._transports.indexOf(transport);
+
+    if (index === -1) {
+      this.info('Transport not found. Remove nothing');
+      return;
+    }
+
+    this._transports.splice(index, 1);
+  }
+
+  dropTransports () {
+    this._transports = [];
+  }
+
+  /**
    * Window error event handler.
    *
    * @param {ErrorEvent} error
@@ -60,8 +104,7 @@ class Logger extends LoggerBase {
    * @param {String} filename - script
    */
   onerror ({ message, filename, lineno, colno, error }) {
-    this._sendError({
-      message,
+    this._log('error', message, {
       stack: error.stack,
       filename: filename,
       line: `${lineno}:${colno}`
@@ -70,58 +113,54 @@ class Logger extends LoggerBase {
 
   /**
    * Logs trace message.
-   * @param {string} messages Trace message.
+   * @param {string|Object|Error} message Error object or message.
+   * @param {Object|undefined} meta
    */
-  trace (...messages) {
+  trace (message, meta = {}) {
     if (!this._levels.trace) {
       return;
     }
 
-    if (console.log) {
-      console.log(...messages);
-    }
+    this._log('trace', message, meta);
   }
 
   /**
    * Logs trace message.
-   * @param {string} messages Trace message.
+   * @param {string|Object|Error} message Error object or message.
+   * @param {Object|undefined} meta
    */
-  debug (...messages) {
+  debug (message, meta = {}) {
     if (!this._levels.debug) {
       return;
     }
 
-    if (console.log) {
-      console.log(...messages);
-    }
+    this._log('debug', message, meta);
   }
 
   /**
    * Logs info message.
-   * @param {string} messages Information message.
+   * @param {string|Object|Error} message Error object or message.
+   * @param {Object|undefined} meta
    */
-  info (...messages) {
+  info (message, meta = {}) {
     if (!this._levels.info) {
       return;
     }
 
-    if (console.info) {
-      console.info(...messages);
-    }
+    this._log('info', message, meta);
   }
 
   /**
    * Logs warn message.
-   * @param {...string} messages Warning message.
+   * @param {string|Object|Error} message Error object or message.
+   * @param {Object|undefined} meta
    */
-  warn (...messages) {
+  warn (message, meta = {}) {
     if (!this._levels.warn) {
       return;
     }
 
-    if (console.warn) {
-      console.warn(...messages);
-    }
+    this._log('warn', message, meta);
   }
 
   /**
@@ -134,8 +173,7 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._sendError(message, meta);
-    Logger.writeError(message);
+    this._log('error', message, meta);
   }
 
   /**
@@ -148,55 +186,38 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._sendError(message, meta);
-    Logger.writeError(message, meta);
+    this._log('fatal', message, meta);
   }
 
   /**
-   * Writes error to console.
-   * @param {...(string|Error|Object)} errors.
+   * Transport to browser console.
+   * @param {string} level
+   * @param {Object} log
    */
-  static writeError (...errors) {
-    if (console.error) {
-      console.error(...errors);
+  static _consoleTransport (level, log) {
+    var map = {
+      trace: 'log',
+      debug: 'log',
+      info: 'info',
+      warn: 'warn',
+      error: 'error',
+      fatal: 'error'
+    };
+
+    if (console[map[level]]) {
+      console[map[level]](log.message, log);
     }
   }
 
-  _sendError (error, data) {
+  _log (level, error, data) {
     var { message, fields } = this._errorFormatter(error);
     var meta = Object.assign({}, fields, data);
 
-    this._request({
-      message, ...meta,
-      from: 'Client',
-      userHRef: this._window.location.href,
-      userAgent: this._window.navigator.userAgent
-    });
-  }
+    var log = { message, ...meta };
 
-  _request (data) {
-    if (!this._config.logger.url) {
-      return;
-    }
+    this._enrichLog(log, level);
 
-    var loggerHost = this._config.logger.host;
-    if (!loggerHost) {
-      let protocol = this._window.location.protocol;
-      let host = this._window.location.host;
-
-      loggerHost = `${protocol}//${host}`;
-    }
-
-    var headers = {
-      'Content-Type': 'application/json'
-    };
-    var options = { data, headers };
-
-    var url = this._config.logger.url;
-
-    this._uhr
-      .post(`${loggerHost}/${url}`, options)
-      .catch(cause => Logger.writeError(cause));
+    this._transports.forEach((transport) => transport(level, log));
   }
 }
 
