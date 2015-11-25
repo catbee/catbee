@@ -205,7 +205,7 @@ class Logger extends LoggerBase {
     };
 
     if (console[map[level]]) {
-      console[map[level]](log.message, log);
+      console[map[level]](`[${level.toUpperCase()}]`, log.message);
     }
   }
 
