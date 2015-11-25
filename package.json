@@ -57,10 +57,10 @@
     "lab": "^7.2.0"
   },
   "scripts": {
-    "lint": "node ./node_modules/.bin/eslint lib/* browser/*",
-    "test": "node ./node_modules/.bin/lab -T node_modules/babel-lab -l",
-    "coverage": "node ./node_modules/.bin/lab -T node_modules/babel-lab -r html -o coverage.html -S -l",
-    "build": "node ./node_modules/.bin/babel lib -d dist/lib && node ./node_modules/.bin/babel browser -d dist/browser",
+    "lint": "eslint lib/* browser/*",
+    "test": "lab -T node_modules/babel-lab -l",
+    "coverage": "lab -T node_modules/babel-lab -r html -o coverage.html -S -l",
+    "build": "babel lib -d dist/lib && babel browser -d dist/browser",
     "prepublish": "npm run build"
   },
   "license": "MIT",
