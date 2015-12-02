@@ -167,9 +167,9 @@ class DocumentRenderer extends DocumentRendererBase {
       .then(() => {
         this._currentRoutingContext = routingContext;
         this._currentUrlState = urlState;
-      })
-      .then(() => {
+
         this._state = this._serviceLocator.resolveInstance(State);
+        this._state.setRoutingContext(routingContext);
         return this._state.runSignal(urlState.signal, urlState.args);
       })
       .then(() => new Promise(resolve => setTimeout(resolve, 0))) // We need wait nextTick before all transactions end
@@ -196,6 +196,7 @@ class DocumentRenderer extends DocumentRendererBase {
         this._currentRoutingContext = routingContext;
         this._currentUrlState = urlState;
 
+        this._state.setRoutingContext(routingContext);
         return this._state.runSignal(urlState.signal, urlState.args);
       })
       .catch(reason => this._eventBus.emit('error', reason));
