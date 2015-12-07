@@ -49,10 +49,7 @@ class Bootstrapper extends BootstrapperBase {
     var eventBus = locator.resolve('eventBus');
     this._wrapEventsWithLogger(configObject, eventBus, logger);
 
-    window.onerror = function errorHandler (msg, uri, line) {
-      logger.fatal(uri + ':' + line + ' ' + msg);
-      return true;
-    };
+    window.addEventListener('error', logger.onerror);
 
     routes.forEach(route => locator.registerInstance('routeDefinition', route));
     watchers.forEach(watcher => locator.registerInstance('watcher', watcher));
