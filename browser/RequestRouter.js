@@ -93,9 +93,11 @@ class RequestRouter {
 
   /**
    * Routes browser render request.
+   * @param {Object} [options={}]
+   * @param {boolean} options.silent
    * @returns {Promise} Promise for nothing.
    */
-  route () {
+  route (options = {}) {
     // because now location was not change yet and
     // different browsers handle `popstate` differently
     // we need to do route in next iteration of event loop
@@ -106,6 +108,7 @@ class RequestRouter {
         var currentAuthority = this._location.authority ? this._location.authority.toString() : null;
 
         if (newLocation.scheme !== this._location.scheme || newAuthority !== currentAuthority) {
+          this._isSilentHistoryChanging = false;
           return Promise.resolve();
         }
 
@@ -115,20 +118,22 @@ class RequestRouter {
 
         if (newLocation.path === this._location.path && newQuery === currentQuery) {
           this._location = newLocation;
+          this._isSilentHistoryChanging = false;
           return Promise.resolve();
         }
 
-        return this._changeState(newLocation);
+        return this._changeState(newLocation, options);
       });
   }
 
   /**
    * Sets application state to specified URI.
    * @param {string} locationString URI to go.
-   * @param {Boolean} isSilent
+   * @param {Object} [options={}]
+   * @param {boolean} options.silent routing without run signal related to URI
    * @returns {Promise} Promise for nothing.
    */
-  go (locationString, isSilent = false) {
+  go (locationString, options = {}) {
     return Promise.resolve()
       .then(() => {
         var location = new URI(locationString);
@@ -155,18 +160,20 @@ class RequestRouter {
           return Promise.resolve();
         }
 
-        this._window.history.pushState({ isSilent }, '', locationString);
-        return this.route();
+        this._window.history.pushState({}, '', locationString);
+        return this.route(options);
       });
   }
 
   /**
    * Changes current application state with new location.
    * @param {URI} newLocation New location.
+   * @param {Object} [options={}]
+   * @param {boolean} options.silent
    * @returns {Promise} Promise for nothing.
    * @private
    */
-  _changeState (newLocation) {
+  _changeState (newLocation, options = {}) {
     return Promise.resolve()
       .then(() => {
         this._location = newLocation;
@@ -189,9 +196,11 @@ class RequestRouter {
           return Promise.resolve();
         }
 
-        return this._documentRenderer.updateState({ args, signal }, routingContext);
+        return this._documentRenderer.updateState({ args, signal }, routingContext, options);
       })
-      .then(() => this._referrer = this._location);
+      .then(() => {
+        this._referrer = this._location;
+      });
   }
 
   /**

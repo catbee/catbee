@@ -188,15 +188,22 @@ class DocumentRenderer extends DocumentRendererBase {
    * Update state by new url location.
    * @param {Object} urlState
    * @param {Object} routingContext
+   * @param {Object} options
+   * @param {boolean} options.silent
    * @returns {Promise} Promise for nothing.
    */
-  updateState (urlState, routingContext) {
+  updateState (urlState, routingContext, options = {}) {
     return this._getPromiseForReadyState()
       .then(() => {
         this._currentRoutingContext = routingContext;
         this._currentUrlState = urlState;
 
         this._state.setRoutingContext(routingContext);
+
+        if (options.silent) {
+          return Promise.resolve();
+        }
+
         return this._state.runSignal(urlState.signal, urlState.args);
       })
       .catch(reason => this._eventBus.emit('error', reason));
