@@ -530,6 +530,35 @@ lab.experiment('browser/RequestRouter', function () {
       }
     });
   });
+
+  lab.test('should not run signal if invoked with silent flag', function (done) {
+    var locator = createLocator();
+    var eventBus = locator.resolve('eventBus');
+    var documentRenderer = locator.resolve('documentRenderer');
+
+    locator.registerInstance('routeDefinition',
+      {
+        expression: '/some',
+        signal: 'test'
+      }
+    );
+
+    eventBus.on('error', done);
+    eventBus.once('stateUpdated', function (state, context, options) {
+      assert.equal(options.silent, true);
+      done();
+    });
+
+    jsdom.env({
+      html: '',
+      done: function(errors, window) {
+        locator.registerInstance('window', window);
+        window.location.replace('http://local1.com');
+        var router = locator.resolveInstance(RequestRouter);
+        router.go('http://local1.com/some', { silent: true });
+      }
+    });
+  });
 });
 
 function createLocator() {
@@ -546,8 +575,8 @@ function createLocator() {
       eventBus.emit('documentRendered', state, context);
       return Promise.resolve();
     },
-    updateState: function(state, context) {
-      eventBus.emit('stateUpdated', state, context);
+    updateState: function (state, context, options) {
+      eventBus.emit('stateUpdated', state, context, options);
       return Promise.resolve();
     }
   };

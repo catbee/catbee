@@ -29,11 +29,13 @@ class ModuleApiProvider extends ModuleApiProviderBase {
   /**
    * Redirects current page to specified URI.
    * @param {string} uriString URI to redirect.
+   * @param {Object} options
+   * @param {boolean} options.silent routing without run signal related to URI
    * @returns {Promise} Promise for nothing.
    */
-  redirect (uriString) {
+  redirect (uriString, options) {
     var requestRouter = this.locator.resolve('requestRouter');
-    return requestRouter.go(uriString);
+    return requestRouter.go(uriString, options);
   }
 
   /**
