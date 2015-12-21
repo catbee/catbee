@@ -1,4 +1,4 @@
-var CatbeeBase = require('../lib/base/CatberryBase');
+var CatbeeBase = require('../lib/base/CatbeeBase');
 
 class Catbee extends CatbeeBase {
   /**
