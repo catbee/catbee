@@ -1,10 +1,10 @@
-var CatberryBase = require('../lib/base/CatberryBase');
+var CatbeeBase = require('../lib/base/CatberryBase');
 
-class Catberry extends CatberryBase {
+class Catbee extends CatbeeBase {
   /**
-   * Creates new instance of the browser version of Catberry.
+   * Creates new instance of the browser version of Catbee.
    * @constructor
-   * @extends CatberryBase
+   * @extends CatbeeBase
    */
   constructor () {
     super();
@@ -18,14 +18,14 @@ class Catberry extends CatberryBase {
   _router = null;
 
   /**
-   * Wraps current HTML document with Catberry event handlers.
+   * Wraps current HTML document with Catbee event handlers.
    */
   wrapDocument () {
     this._router = this.locator.resolve('requestRouter');
   }
 
   /**
-   * Starts Catberry application when DOM is ready.
+   * Starts Catbee application when DOM is ready.
    * @returns {Promise} Promise for nothing.
    */
   startWhenReady () {
@@ -43,4 +43,4 @@ class Catberry extends CatberryBase {
   }
 }
 
-module.exports = Catberry;
+module.exports = Catbee;

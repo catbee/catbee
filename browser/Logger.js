@@ -32,7 +32,7 @@ class Logger extends LoggerBase {
   }
 
   /**
-   * Catberry UHR reference
+   * Catbee UHR reference
    *
    * @type {UHR}
    * @private
@@ -48,7 +48,7 @@ class Logger extends LoggerBase {
   _window = null;
 
   /**
-   * Catberry logger config reference
+   * Catbee logger config reference
    *
    * @type {Object}
    * @private
