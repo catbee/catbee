@@ -1,6 +1,6 @@
 {
   "name": "catbee",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": {
     "name": "Kirill Kaysarov",
     "email": "k.kaysarov@2gis.ru"
@@ -8,7 +8,7 @@
   "description": "Catbee - High level framework based on best practices from Catberry, Baobab and Cerebral",
   "homepage": "https://github.com/markuplab/catbee",
   "keywords": [
-    "catberry",
+    "catbee",
     "state",
     "immutable",
     "singals",
@@ -24,7 +24,7 @@
     "./dist/lib/loaders/SignalLoader.js": "./dist/browser/loaders/SignalLoader.js",
     "./dist/lib/loaders/WatcherLoader.js": "./dist/browser/loaders/WatcherLoader.js",
     "./dist/lib/providers/ModuleApiProvider.js": "./dist/browser/providers/ModuleApiProvider.js",
-    "./dist/lib/Catberry.js": "./dist/browser/Catberry.js",
+    "./dist/lib/Catbee.js": "./dist/browser/Catbee.js",
     "./dist/lib/DocumentRenderer.js": "./dist/browser/DocumentRenderer.js",
     "./dist/lib/RequestRouter.js": "./dist/browser/RequestRouter.js"
   },

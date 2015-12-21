@@ -2,7 +2,7 @@
  * __BrowserBundle.js template file
  * @reference builders/BootstrapperBuilder
  */
-var Catberry = require('./node_modules/catbee/dist/browser/Catberry.js');
+var Catbee = require('./node_modules/catbee/dist/browser/Catbee.js');
 var BootstrapperBase = require('./node_modules/catbee/dist/lib/base/BootstrapperBase.js');
 var ModuleApiProvider = require('./node_modules/catbee/dist/browser/providers/ModuleApiProvider');
 var CookieWrapper = require('./node_modules/catbee/dist/browser/CookieWrapper');
@@ -21,19 +21,19 @@ const DEBUG_COMPONENT_BOUND = 'Component "%s" is bound';
 const DEBUG_COMPONENT_UNBOUND = 'Component "%s" is unbound';
 
 /**
- * Creates new instance of the browser Catberry's bootstrapper.
+ * Creates new instance of the browser Catbee's bootstrapper.
  * @constructor
  * @extends BootstrapperBase
  */
 class Bootstrapper extends BootstrapperBase {
   constructor () {
-    super(Catberry);
+    super(Catbee);
 
     this.create = this.create.bind(this);
   }
 
   /**
-   * Configures Catberry's service locator.
+   * Configures Catbee's service locator.
    * @param {Object} configObject Application config object.
    * @param {ServiceLocator} locator Service locator to configure.
    */
