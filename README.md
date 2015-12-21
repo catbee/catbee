@@ -9,4 +9,4 @@ High level framework based on best practices from Catberry, Baobab and Cerebral.
 Catbee is Catberry small brother (read as fork). Unlike the Catberry, Catbee use "Single State Tree" concepction.
 All state mutations run in signals, and powered by [AppState](https://github.com/markuplab/appstate) module.
 
-More information and documentation later...
+**More information and documentation later...**
