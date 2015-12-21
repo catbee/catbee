@@ -3,6 +3,7 @@ var LoggerBase = require('../lib/base/LoggerBase');
 
 /**
  * Creates browser logger.
+ *
  * @param {Object} $config
  * @param {Window} $window
  * @param {Object} $uhr
@@ -32,6 +33,7 @@ class Logger extends LoggerBase {
 
   /**
    * Catberry UHR reference
+   *
    * @type {UHR}
    * @private
    */
@@ -47,6 +49,7 @@ class Logger extends LoggerBase {
 
   /**
    * Catberry logger config reference
+   *
    * @type {Object}
    * @private
    */
@@ -67,8 +70,7 @@ class Logger extends LoggerBase {
    */
   addTransport (transport) {
     if (typeof transport !== 'function') {
-      this.error(new TypeError('transport must be a function'));
-      return;
+      throw new TypeError('Transport must be a function');
     }
 
     this._transports.push(transport);
@@ -104,7 +106,7 @@ class Logger extends LoggerBase {
    * @param {String} filename - script
    */
   onerror ({ message, filename, lineno, colno, error }) {
-    this._log('error', message, {
+    this._send('error', message, {
       stack: error.stack,
       filename: filename,
       line: `${lineno}:${colno}`
@@ -113,6 +115,7 @@ class Logger extends LoggerBase {
 
   /**
    * Logs trace message.
+   *
    * @param {string|Object|Error} message Error object or message.
    * @param {Object|undefined} meta
    */
@@ -121,7 +124,7 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._log('trace', message, meta);
+    this._message('trace', message, meta);
   }
 
   /**
@@ -134,11 +137,12 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._log('debug', message, meta);
+    this._message('debug', message, meta);
   }
 
   /**
    * Logs info message.
+   *
    * @param {string|Object|Error} message Error object or message.
    * @param {Object|undefined} meta
    */
@@ -147,11 +151,12 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._log('info', message, meta);
+    this._message('info', message, meta);
   }
 
   /**
    * Logs warn message.
+   *
    * @param {string|Object|Error} message Error object or message.
    * @param {Object|undefined} meta
    */
@@ -160,11 +165,12 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._log('warn', message, meta);
+    this._message('warn', message, meta);
   }
 
   /**
    * Logs error message.
+   *
    * @param {string|Object|Error} message Error object or message.
    * @param {Object|undefined} meta
    */
@@ -173,7 +179,7 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._log('error', message, meta);
+    this._error('error', message, meta);
   }
 
   /**
@@ -186,11 +192,12 @@ class Logger extends LoggerBase {
       return;
     }
 
-    this._log('fatal', message, meta);
+    this._error('fatal', message, meta);
   }
 
   /**
    * Transport to browser console.
+   *
    * @param {string} level
    * @param {Object} log
    */
@@ -205,18 +212,18 @@ class Logger extends LoggerBase {
     };
 
     if (console[map[level]]) {
-      console[map[level]](`[${level.toUpperCase()}]`, log.message);
+      console[map[level]](`[${level.toUpperCase()}]`, log.stack || log.message);
     }
   }
 
-  _log (level, error, data) {
-    var { message, fields } = this._errorFormatter(error);
-    var meta = Object.assign({}, fields, data);
-
-    var log = { message, ...meta };
-
-    this._enrichLog(log, level);
-
+  /**
+   * Entry point for browser logs.
+   * Executes from LoggerBase.
+   *
+   * @param {string} level
+   * @param {Object} log
+   */
+  log (level, log) {
     this._transports.forEach((transport) => transport(level, log));
   }
 }
