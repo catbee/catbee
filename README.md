@@ -64,7 +64,7 @@ No more stores. Watchers binded to component like stores, by attribute `watcher`
 #### this.$context.sendAction() reworked to this.$context.signal()
 No more actions. All activity and logic centralized in signals. All signals load/reload/register automaticly by Catbee, you can look [example here](https://github.com/markuplab/catbee-todomvc/tree/master/signals).
 
-### New routing definition style
+#### New routing definition style
 ```
 module.exports = [
   {
@@ -76,6 +76,9 @@ module.exports = [
   }
 ];
 ```
+
+#### New logger system
+Catbee use winston as server logger instead Log4js used in Catberry. Also we add special [YAML-like](https://github.com/eugeny-dementev/winston-console-formatter) console formatter.
 
 #### this.$context.state
 State instance available in this.$context as read-only object.
