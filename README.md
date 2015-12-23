@@ -8,6 +8,9 @@ High level isomorphic framework based on best practices from Catberry, Baobab an
 Catbee is [Catberry](https://github.com/catberry/catberry) small brother (read as fork). Unlike the Catberry, Catbee use "Single State Tree" concepction.
 All state mutations run in signals, and powered by [AppState](https://github.com/markuplab/appstate) module.
 
+#### Examples
+[Catbee TodoMVC](https://github.com/markuplab/catbee-todomvc)
+
 #### API changes between Catberry and Catbee
 
 Main changes in Catbee affected to data flow architecture. All data focused in [Baobab tree](https://github.com/Yomguithereal/baobab), instead of distributed flux stores in Catberry. Tree contains full application state, and have 2 interfaces: modify API also known as "Signals", and read API also known as "Watchers". 
@@ -53,12 +56,12 @@ module.exports = function (attributes) {
 }
 ```
 
-### Stores reworked to Watchers
+#### Stores reworked to Watchers
 No more stores. Watchers binded to component like stores, by attribute `watcher`. Also you don't need run this.$context.changed, it's run automaticly. 
 
 `this.$context.getStoreData -> this.$context.getWatcherData // -> Promise`
 
-### this.$context.sendAction() reworked to this.$context.signal()
+#### this.$context.sendAction() reworked to this.$context.signal()
 No more actions. All activity and logic centralized in signals. All signals load/reload/register automaticly by Catbee, you can look [example here](https://github.com/markuplab/catbee-todomvc/tree/master/signals).
 
 ### New routing definition style
@@ -74,27 +77,25 @@ module.exports = [
 ];
 ```
 
-### this.$context.state
+#### this.$context.state
 State instance available in this.$context as read-only object.
 
-### Silent redirects
+#### Silent redirects
 On every URL change, we run signal, sometime it's little overhead. You can change URL without signal execution.
 `this.$context.redirect('/some/url?filter=active', { silent: true });`
 
-### Browserify Plugins
+#### Browserify Plugins
 Catberry support browserify transforms, we also support pluggins.
 
 Example here: https://github.com/markuplab/catbee-boilerplate/blob/master/services/browserify/cssmodules/index.js
 
-### All other API fully compatible with Catberry
+#### All other API fully compatible with Catberry
 http://catberry.org/documentation
 
-### You can get more infomation here:
-
-[Catbee TodoMVC](https://github.com/markuplab/catbee-todomvc)
+#### You can get more infomation here:
 
 [Boilerplate](https://github.com/markuplab/catbee-boilerplate)
 
 [Component Generator](https://github.com/markuplab/generator-catbee)
 
-### Big thanx to Denis Rechkunov, Catberry, Baobab and Cerebral contributors for cool projects.
+#### Big thanx to Denis Rechkunov, Catberry, Baobab and Cerebral contributors for cool projects.
