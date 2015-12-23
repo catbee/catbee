@@ -83,6 +83,7 @@ On every URL change, we run signal, sometime it's little overhead. You can chang
 
 ### Browserify Plugins
 Catberry support browserify transforms, we also support pluggins.
+
 Example here: https://github.com/markuplab/catbee-boilerplate/blob/master/services/browserify/cssmodules/index.js
 
 ### All other API fully compatible with Catberry
