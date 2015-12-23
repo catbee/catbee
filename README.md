@@ -95,3 +95,5 @@ http://catberry.org/documentation
 [Boilerplate](https://github.com/markuplab/catbee-boilerplate)
 
 [Component Generator](https://github.com/markuplab/generator-catbee)
+
+### Big thanx to Denis Rechkunov, Catberry, Baobab and Cerebral contributors for cool projects.
