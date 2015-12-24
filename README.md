@@ -17,7 +17,7 @@ Main changes in Catbee affected to data flow architecture. All data focused in [
 
 Signal is signular way to modify state tree. It's look like middleware, but more flexible and adopted for sync/async operations. You can read more about signals [here](http://cerebraljs.com) and [here](https://github.com/markuplab/appstate). Now, we recommend run signal on every user actions, when you need change application state, and also signal automaticly run on every url change. 
 
-Signals use "composition" conception, and contains array of independant functions. It's very simple way to maintain big code base.
+Signals use "composition" conception, and contains array of independant functions. It's very simple way to maintain big codebase.
 
 ```js
 var signal = [
