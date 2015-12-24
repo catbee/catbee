@@ -152,8 +152,7 @@ class RequestRouter {
           return Promise.resolve();
         }
 
-        var args = this._urlArgsProvider.getArgsByUri(location);
-        var signal = this._urlArgsProvider.getSignalByUri(location);
+        var { args, signal } = this._urlArgsProvider.getArgsAndSignalByUri(location);
 
         if (!args || !signal) {
           this._window.location.assign(locationString);
@@ -177,8 +176,7 @@ class RequestRouter {
     return Promise.resolve()
       .then(() => {
         this._location = newLocation;
-        var args = this._urlArgsProvider.getArgsByUri(newLocation);
-        var signal = this._urlArgsProvider.getSignalByUri(newLocation);
+        var { args, signal } = this._urlArgsProvider.getArgsAndSignalByUri(newLocation);
 
         var routingContext = this._contextFactory.create({
           referrer: this._referrer || this._window.document.referrer,
