@@ -19,7 +19,7 @@ Signal is signular way to modify state tree. It's look like middleware, but more
 
 Signals use "composition" conception, and contains array of independant functions. It's very simple way to maintain big code base.
 
-```
+```js
 var signal = [
   setLoading, // Sync function
   [ // Here we run parallel functions
@@ -38,7 +38,7 @@ var signal = [
 
 Components can access data by [watchers](https://github.com/Yomguithereal/baobab#specialized-getters). We have 2 main reasons to use watchers. We need data context for template rendering, and also we need state update events to rerender component. You don't need bind watchers manually, it's inside Catbee. 
 
-```
+```js
 // Here we use simple Baobab.watch API
 module.exports = {
   news: ['news', 'data'],
@@ -59,13 +59,15 @@ module.exports = function (attributes) {
 #### Stores reworked to Watchers
 No more stores. Watchers binded to component like stores, by attribute `watcher`. Also you don't need run this.$context.changed, it's run automaticly. 
 
-`this.$context.getStoreData -> this.$context.getWatcherData // -> Promise`
+```js
+this.$context.getStoreData -> this.$context.getWatcherData // -> Promise
+```
 
 #### this.$context.sendAction() reworked to this.$context.signal()
 No more actions. All activity and logic centralized in signals. All signals load/reload/register automaticly by Catbee, you can look [example here](https://github.com/markuplab/catbee-todomvc/tree/master/signals).
 
 #### New routing definition style
-```
+```js
 module.exports = [
   {
     expression: '/news/:id', // id is dynamic arg
