@@ -8,29 +8,39 @@ var URI = require('catberry-uri').URI;
 var testCases = require('../../cases/lib/providers/URLArgsProvider.json');
 
 lab.experiment('lib/providers/URLArgsProvider', function () {
-  lab.experiment('#getArgsByUri', function () {
-    testCases.getArgsByUri.forEach(function (testCase) {
+  lab.experiment('#getArgsAndSignalByUri', function () {
+    testCases.getArgsAndSignalByUri.forEach(function (testCase) {
       lab.test(testCase.name, function (done) {
         var locator = createLocator(testCase.routes);
         var provider = locator.resolveInstance(URLArgsProvider);
         var uri = new URI(testCase.uri);
-        var args = provider.getArgsByUri(uri);
-        assert.deepEqual(args, testCase.expectedArgs);
+        var argsAndSignal = provider.getArgsAndSignalByUri(uri);
+        assert.deepEqual(argsAndSignal, testCase.expectedArgsAndSignal);
         done();
       });
     });
-  });
 
-  lab.experiment('#getSignalByUri', function () {
-    testCases.getSignalByUri.forEach(function (testCase) {
-      lab.test(testCase.name, function (done) {
-        var locator = createLocator(testCase.routes);
-        var provider = locator.resolveInstance(URLArgsProvider);
-        var uri = new URI(testCase.uri);
-        var signal = provider.getSignalByUri(uri);
-        assert.deepEqual(signal, testCase.expectedSignal);
-        done();
+    lab.test('Should map args if method map passed', function (done) {
+      var locator = createLocator([
+        {
+          expression: '/',
+          signal: 'Hello',
+          map: function ({ signal, args }) {
+            signal = 'test';
+            return { signal, args };
+          }
+        }
+      ]);
+
+      var provider = locator.resolveInstance(URLArgsProvider);
+      var uri = new URI('/');
+
+      var argsAndSignal = provider.getArgsAndSignalByUri(uri);
+      assert.deepEqual(argsAndSignal, {
+        args: {},
+        signal: 'test'
       });
+      done();
     });
   });
 });

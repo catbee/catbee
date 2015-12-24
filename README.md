@@ -72,6 +72,7 @@ module.exports = [
   {
     expression: '/news/:id', // id is dynamic arg
     signal: 'newsRoute',
+    map: mapFn,
     args: {
       page: 'newsCard' // static args
     }
