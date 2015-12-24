@@ -5,7 +5,7 @@ Catbee [![Build Status](https://travis-ci.org/markuplab/catbee.svg?branch=master
 
 High level isomorphic framework based on best practices from Catberry, Baobab and Cerebral.
 
-Catbee is [Catberry](https://github.com/catberry/catberry) small brother (read as fork). Unlike the Catberry, Catbee use "Single State Tree" concepction.
+Catbee is [Catberry](https://github.com/catberry/catberry) small brother (read as fork). Unlike the Catberry, Catbee use "Single State Tree" conception.
 All state mutations run in signals, and powered by [AppState](https://github.com/markuplab/appstate) module.
 
 #### Examples
