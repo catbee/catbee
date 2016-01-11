@@ -959,7 +959,7 @@ class DocumentRenderer extends DocumentRendererBase {
       },
       attributes: {
         get () {
-          return attributes;
+          return attributesToObject(this.element.attributes);
         },
         enumerable: true
       }
