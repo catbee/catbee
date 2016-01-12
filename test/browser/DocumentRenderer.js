@@ -1000,6 +1000,86 @@ lab.experiment('browser/DocumentRenderer', function () {
       });
     });
 
+    lab.test('should render inner component with actual attributes', (done) => {
+      var someString = 'asdflkaoag';
+      var attributesLabel = null;
+
+      var templates = {};
+      var templateProvider = {
+        registerCompiled (name, func) {
+          templates[name] = func;
+        },
+        render (name, data) {
+          return Promise.resolve(templates[name](data));
+        }
+      };
+
+      class OuterComponent {
+        render () {
+          return this.$context.getWatcherData();
+        }
+      }
+
+      class InnerComponent {
+        render () {
+          attributesLabel = this.$context.attributes.label;
+          return this.$context.attributes;
+        }
+      }
+
+      var components = [
+        {
+          name: 'test1',
+          constructor: OuterComponent,
+          templateSource: ({ label }) => `<cat-test2 id="unique2" label="${label}" />`
+        },
+        {
+          name: 'test2',
+          constructor: InnerComponent,
+          templateSource: ({ label }) => `${label}`
+        }
+      ];
+
+
+
+      var watchers = {
+        watcher1: {
+          label: ['update']
+        }
+      };
+
+      var locator = createLocator(components, {}, watchers, [(args, state) => {
+        state.set('update', someString);
+      }]);
+
+      var eventBus:EventEmitter = locator.resolve('eventBus');
+      eventBus.on('error', done);
+
+      jsdom.env({
+        html: ' ',
+        done (errors, window) {
+          locator.registerInstance('window', window);
+          locator.registerInstance('templateProvider', templateProvider);
+
+          var renderer = locator.resolveInstance(DocumentRenderer);
+          var element = window.document.createElement('cat-test1');
+
+          element.setAttribute('id', 'unique1');
+          element.setAttribute('watcher', 'watcher1');
+
+          renderer.initWithState({ signal: 'test' }, {})
+            .then(() => renderer.renderComponent(element))
+            .then(() => renderer.updateState({ signal: 'update' }, {}))
+            .then(() => renderer.renderComponent(element))
+            .then(() => {
+              assert.strictEqual(attributesLabel, 'update');
+              done();
+            })
+            .catch(done);
+        }
+      })
+    });
+
     lab.test('should use the same component instance if it\'s element recreated after rendering', function (done) {
       var instances = {
         first: [],
