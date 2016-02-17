@@ -5,8 +5,6 @@ var LoggerBase = require('../lib/base/LoggerBase');
  * Creates browser logger.
  *
  * @param {Object} $config
- * @param {Window} $window
- * @param {Object} $uhr
  * @constructor
  */
 class Logger extends LoggerBase {
@@ -30,22 +28,6 @@ class Logger extends LoggerBase {
     this.fatal = this.fatal.bind(this);
     this.onerror = this.onerror.bind(this);
   }
-
-  /**
-   * Catbee UHR reference
-   *
-   * @type {UHR}
-   * @private
-   */
-  _uhr = null;
-
-  /**
-   * Browser window reference
-   *
-   * @type {Window}
-   * @private
-   */
-  _window = null;
 
   /**
    * Catbee logger config reference
