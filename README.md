@@ -86,6 +86,9 @@ Catbee use winston as server logger instead Log4js used in Catberry. Also we add
 #### this.$context.state
 State instance available in this.$context as read-only object.
 
+### context.headers
+Request headers object. Available only on server side.
+
 #### Silent redirects
 On every URL change, we run signal, sometime it's little overhead. You can change URL without signal execution.
 `this.$context.redirect('/some/url?filter=active', { silent: true });`
