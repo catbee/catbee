@@ -179,6 +179,7 @@ class RequestRouter {
         var { args, signal } = this._urlArgsProvider.getArgsAndSignalByUri(newLocation);
 
         var routingContext = this._contextFactory.create({
+          headers: null,
           referrer: this._referrer || this._window.document.referrer,
           location: this._location,
           userAgent: this._window.navigator.userAgent
