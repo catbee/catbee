@@ -604,6 +604,12 @@ class DocumentRenderer extends DocumentRendererBase {
     var selectors = Object.keys(selectorHandlers);
     return (event) => {
       var element = event.target;
+
+      if (element.disabled) {
+        event.stopPropagation();
+        return;
+      }
+
       var dispatchedEvent = createCustomEvent(event, () => {
         return element;
       });
