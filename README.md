@@ -1,4 +1,4 @@
-Catbee [![Build Status](https://travis-ci.org/markuplab/catbee.svg?branch=master)](https://travis-ci.org/markuplab/catbee)
+Catbee [![Build Status](https://travis-ci.org/2gis/catbee.svg?branch=master)](https://travis-ci.org/markuplab/catbee)
 ======
 
 <img src="https://raw.githubusercontent.com/markuplab/catbee-todomvc/master/logo.png" width="100" height="100" />
