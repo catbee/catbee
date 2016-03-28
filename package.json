@@ -1,6 +1,6 @@
 {
   "name": "catbee",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "author": {
     "name": "Kirill Kaysarov",
     "email": "k.kaysarov@2gis.ru"
@@ -35,7 +35,6 @@
     "browser-process-hrtime": "^0.1.2",
     "browserify": "^12.0.1",
     "catberry-locator": "^1.1.9",
-    "catberry-uhr": "^4.2.2",
     "catberry-uri": "^2.1.6",
     "chokidar": "^1.3.0",
     "deep-equal": "^1.0.1",
