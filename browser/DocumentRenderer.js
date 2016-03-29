@@ -8,6 +8,7 @@ var State = require('../lib/State');
 
 const WARN_ID_NOT_SPECIFIED = 'Component "%s" does not have an ID, skipping...';
 const WARN_SAME_ID = 'The duplicated ID "%s" has been found, skipping component "%s"...';
+const WARN_MISSING_WATCHER = 'The watcher %s is missing. Skipping...';
 const ERROR_CREATE_WRONG_ARGUMENTS = 'Tag name should be a string and attributes should be an object';
 const ERROR_CREATE_WRONG_NAME = 'Component for tag "%s" not found';
 const ERROR_CREATE_WRONG_ID = 'The ID is not specified or already used';
@@ -985,7 +986,12 @@ class DocumentRenderer extends DocumentRendererBase {
         watcherDefinition = watcherDefinition.apply(null, [attributes]);
       }
 
-      componentContext.watcher = this._state.getWatcher(watcherDefinition);
+      if (watcherDefinition) {
+        componentContext.watcher = this._state.getWatcher(watcherDefinition);
+      } else {
+        this._logger.warn(util.format(WARN_MISSING_WATCHER, watcherName));
+        componentContext.watcher = null;
+      }
     }
 
     componentContext.getWatcherData = () => {
