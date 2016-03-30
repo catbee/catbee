@@ -746,7 +746,7 @@ class DocumentRenderer extends DocumentRendererBase {
     var promises = renderingContext.roots.map(root => {
       var id = this._getId(root);
       renderingContext.rootIds[id] = true;
-      this.renderComponent(root, renderingContext);
+      return this.renderComponent(root, renderingContext);
     });
 
     return Promise.all(promises)
