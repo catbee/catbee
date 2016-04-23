@@ -1,13 +1,12 @@
+'use strict';
+
 var CookieWrapperBase = require('../lib/base/CookieWrapperBase');
 
 class CookieWrapper extends CookieWrapperBase {
-  constructor ($window) {
+  constructor (locator) {
     super();
-    this._window = $window;
+    this._window = locator.resolve('window');
   }
-
-  // Current browser window.
-  _window = null;
 
   // Gets current cookie string.
   getCookieString () {

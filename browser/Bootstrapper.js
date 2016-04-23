@@ -1,3 +1,5 @@
+'use strict';
+
 var Catbee = require('./Catbee.js');
 var BootstrapperBase = require('../lib/base/BootstrapperBase.js');
 var ModuleApiProvider = require('./providers/ModuleApiProvider');

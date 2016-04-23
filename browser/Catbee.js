@@ -1,3 +1,5 @@
+'use strict';
+
 var CatbeeBase = require('../lib/base/CatbeeBase');
 
 class Catbee extends CatbeeBase {
@@ -5,9 +7,6 @@ class Catbee extends CatbeeBase {
   constructor () {
     super();
   }
-
-  // Current request router.
-  _router = null;
 
   // Wraps current HTML document with Catbee event handlers.
   wrapDocument () {

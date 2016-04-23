@@ -1,3 +1,5 @@
+'use strict';
+
 var propertyHelper = require('../../lib/helpers/propertyHelper');
 var ModuleApiProviderBase = require('../../lib/base/ModuleApiProviderBase');
 

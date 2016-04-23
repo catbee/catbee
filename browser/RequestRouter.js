@@ -1,3 +1,5 @@
+'use strict';
+
 var URI = require('catberry-uri').URI;
 
 const MOUSE_PRIMARY_KEY = 0;
@@ -14,9 +16,11 @@ class RequestRouter {
     this._urlArgsProvider = $serviceLocator.resolve('urlArgsProvider');
     this._contextFactory = $serviceLocator.resolve('contextFactory');
     this._documentRenderer = $serviceLocator.resolve('documentRenderer');
+    this._referrer = '';
+    this._isStateInitialized = false;
+    this._isSilentHistoryChanging = false;
 
-    this._isHistorySupported = this._window.history &&
-      this._window.history.pushState instanceof Function;
+    this._isHistorySupported = this._window.history && this._window.history.pushState instanceof Function;
 
     // add event handlers
     this._wrapDocument();
@@ -25,35 +29,10 @@ class RequestRouter {
       .catch(reason => this._handleError(reason));
   }
 
-  // Current initialization flag.
-  _isStateInitialized = false;
-
-  // Current referrer.
-  _referrer = '';
-
-  // Current location.
-  _location = null;
-
-  // Current event bus.
-  _eventBus = null;
-
-  // Current context factory.
-  _contextFactory = null;
-
-  // Current state provider.
-  _urlArgsProvider = null;
-
-  // Current document renderer.
-  _documentRenderer = null;
-
-  // Current browser window.
-  _window = null;
-
-  // True if current browser supports history API.
-  _isHistorySupported = false;
-
   // Routes browser render request.
-  route (options = {}) {
+  route (options) {
+    options = options || {};
+
     // because now location was not change yet and
     // different browsers handle `popstate` differently
     // we need to do route in next iteration of event loop
@@ -82,14 +61,10 @@ class RequestRouter {
       });
   }
 
-  /**
-   * Sets application state to specified URI.
-   * @param {string} locationString URI to go.
-   * @param {Object} [options={}]
-   * @param {boolean} options.silent routing without run signal related to URI
-   * @returns {Promise} Promise for nothing.
-   */
-  go (locationString, options = {}) {
+  // Sets application state to specified URI.
+  go (locationString, options) {
+    options = options || {};
+
     return Promise.resolve()
       .then(() => {
         var location = new URI(locationString);
@@ -110,7 +85,7 @@ class RequestRouter {
 
         var args = this._urlArgsProvider.getArgsByUri(location);
 
-        if (!args || !signal) {
+        if (!args) {
           this._window.location.assign(locationString);
           return Promise.resolve();
         }
@@ -121,7 +96,9 @@ class RequestRouter {
   }
 
   // Changes current application state with new location.
-  _changeState (newLocation, options = {}) {
+  _changeState (newLocation, options) {
+    options = options || {};
+
     return Promise.resolve()
       .then(() => {
         this._location = newLocation;
