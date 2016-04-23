@@ -87,12 +87,13 @@ lab.experiment('browser/RequestRouter', function () {
 
           testUtils.click(window.document.getElementsByTagName('a')[0], clickOptions);
 
-          setTimeout(function () {
-            assert.strictEqual(isChecked, true);
-            assert.strictEqual(window.location.toString(), 'http://local' + link);
-            assert.strictEqual(window.history.length, 2);
-            done();
-          }, 10);
+          testUtils.wait(10)
+            .then(() => {
+              assert.strictEqual(isChecked, true);
+              assert.strictEqual(window.location.toString(), 'http://local' + link);
+              assert.strictEqual(window.history.length, 2);
+              done();
+            });
         }
       });
     });
