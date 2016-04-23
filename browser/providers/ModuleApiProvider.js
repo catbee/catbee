@@ -2,46 +2,28 @@ var propertyHelper = require('../../lib/helpers/propertyHelper');
 var ModuleApiProviderBase = require('../../lib/base/ModuleApiProviderBase');
 
 class ModuleApiProvider extends ModuleApiProviderBase {
-  /**
-   * Creates new instance of the module API provider.
-   * @param {ServiceLocator} $serviceLocator Service locator
-   * to resolve dependencies.
-   * @constructor
-   * @extends ModuleApiProviderBase
-   */
-  constructor ($serviceLocator) {
-    super($serviceLocator);
+  // Creates new instance of the module API provider.
+  constructor (locator) {
+    super(locator);
 
     propertyHelper.defineReadOnly(this, 'isBrowser', true);
     propertyHelper.defineReadOnly(this, 'isServer', false);
   }
 
-  /**
-   * Reloads the page for handling "not found" error.
-   * @returns {Promise} Promise for nothing.
-   */
+  // Reloads the page for handling "not found" error.
   notFound () {
     var window = this.locator.resolve('window');
     window.location.reload();
     return Promise.resolve();
   }
 
-  /**
-   * Redirects current page to specified URI.
-   * @param {string} uriString URI to redirect.
-   * @param {Object} options
-   * @param {boolean} options.silent routing without run signal related to URI
-   * @returns {Promise} Promise for nothing.
-   */
+  // Redirects current page to specified URI.
   redirect (uriString, options) {
     var requestRouter = this.locator.resolve('requestRouter');
     return requestRouter.go(uriString, options);
   }
 
-  /**
-   * Clears current location URI's fragment.
-   * @returns {Promise} Promise for nothing.
-   */
+  // Clears current location URI's fragment.
   clearFragment () {
     var window = this.locator.resolve('window');
     var position = window.document.body.scrollTop;

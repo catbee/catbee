@@ -7,10 +7,7 @@ const A_TAG_NAME = 'A';
 const BODY_TAG_NAME = 'BODY';
 
 class RequestRouter {
-  /**
-   * Client-side router
-   * @param {ServiceLocator} $serviceLocator
-   */
+  // Client-side router
   constructor ($serviceLocator) {
     this._eventBus = $serviceLocator.resolve('eventBus');
     this._window = $serviceLocator.resolve('window');
@@ -28,75 +25,34 @@ class RequestRouter {
       .catch(reason => this._handleError(reason));
   }
 
-  /**
-   * Current initialization flag.
-   * @type {boolean}
-   * @private
-   */
+  // Current initialization flag.
   _isStateInitialized = false;
 
-  /**
-   * Current referrer.
-   * @type {String|URI}
-   * @private
-   */
+  // Current referrer.
   _referrer = '';
 
-  /**
-   * Current location.
-   * @type {URI}
-   * @private
-   */
+  // Current location.
   _location = null;
 
-  /**
-   * Current event bus.
-   * @type {EventEmitter}
-   * @private
-   */
+  // Current event bus.
   _eventBus = null;
 
-  /**
-   * Current context factory.
-   * @type {ContextFactory}
-   * @private
-   */
+  // Current context factory.
   _contextFactory = null;
 
-  /**
-   * Current state provider.
-   * @type {URLArgsProvider}
-   * @private
-   */
+  // Current state provider.
   _urlArgsProvider = null;
 
-  /**
-   * Current document renderer.
-   * @type {DocumentRenderer}
-   * @private
-   */
+  // Current document renderer.
   _documentRenderer = null;
 
-  /**
-   * Current browser window.
-   * @type {Window}
-   * @private
-   */
+  // Current browser window.
   _window = null;
 
-  /**
-   * True if current browser supports history API.
-   * @type {boolean}
-   * @private
-   */
+  // True if current browser supports history API.
   _isHistorySupported = false;
 
-  /**
-   * Routes browser render request.
-   * @param {Object} [options={}]
-   * @param {boolean} options.silent
-   * @returns {Promise} Promise for nothing.
-   */
+  // Routes browser render request.
   route (options = {}) {
     // because now location was not change yet and
     // different browsers handle `popstate` differently
@@ -152,7 +108,7 @@ class RequestRouter {
           return Promise.resolve();
         }
 
-        var { args, signal } = this._urlArgsProvider.getArgsAndSignalByUri(location);
+        var args = this._urlArgsProvider.getArgsByUri(location);
 
         if (!args || !signal) {
           this._window.location.assign(locationString);
@@ -164,21 +120,15 @@ class RequestRouter {
       });
   }
 
-  /**
-   * Changes current application state with new location.
-   * @param {URI} newLocation New location.
-   * @param {Object} [options={}]
-   * @param {boolean} options.silent
-   * @returns {Promise} Promise for nothing.
-   * @private
-   */
+  // Changes current application state with new location.
   _changeState (newLocation, options = {}) {
     return Promise.resolve()
       .then(() => {
         this._location = newLocation;
-        var { args, signal } = this._urlArgsProvider.getArgsAndSignalByUri(newLocation);
+        var args = this._urlArgsProvider.getArgsByUri(newLocation);
 
         var routingContext = this._contextFactory.create({
+          args,
           headers: null,
           referrer: this._referrer || this._window.document.referrer,
           location: this._location,
@@ -187,25 +137,22 @@ class RequestRouter {
 
         if (!this._isStateInitialized) {
           this._isStateInitialized = true;
-          return this._documentRenderer.initWithState({ args, signal }, routingContext);
+          return this._documentRenderer.initWithState(routingContext);
         }
 
-        if (!args || !signal) {
+        if (!args) {
           window.location.reload();
           return Promise.resolve();
         }
 
-        return this._documentRenderer.updateState({ args, signal }, routingContext, options);
+        return this._documentRenderer.updateState(routingContext, options);
       })
       .then(() => {
         this._referrer = this._location;
       });
   }
 
-  /**
-   * Wraps document with required events to route requests.
-   * @private
-   */
+  // Wraps document with required events to route requests.
   _wrapDocument () {
     if (!this._isHistorySupported) {
       return;
@@ -233,12 +180,7 @@ class RequestRouter {
     });
   }
 
-  /**
-   * Handles link click on the page.
-   * @param {Event} event Event-related object.
-   * @param {Element} element Link element.
-   * @private
-   */
+  // Handles link click on the page.
   _linkClickHandler (event, element) {
     var targetAttribute = element.getAttribute(TARGET_ATTRIBUTE_NAME);
     if (targetAttribute) {
@@ -264,21 +206,13 @@ class RequestRouter {
       .catch(this._handleError.bind(this));
   }
 
-  /**
-   * Handles all errors.
-   * @param {Error} error Error to handle.
-   * @private
-   */
+  // Handles all errors.
   _handleError (error) {
     this._eventBus.emit('error', error);
   }
 }
 
-/**
- * Finds the closest ascending "A" element node.
- * @param {Node} element DOM element.
- * @returns {Node|null} The closest "A" element or null.
- */
+// Finds the closest ascending "A" element node.
 function closestLink (element) {
   while (element && element.nodeName !== A_TAG_NAME && element.nodeName !== BODY_TAG_NAME) {
     element = element.parentNode;
