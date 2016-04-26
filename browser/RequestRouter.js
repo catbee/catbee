@@ -2,12 +2,6 @@
 
 var URI = require('catberry-uri').URI;
 
-const MOUSE_PRIMARY_KEY = 0;
-const HREF_ATTRIBUTE_NAME = 'href';
-const TARGET_ATTRIBUTE_NAME = 'target';
-const A_TAG_NAME = 'A';
-const BODY_TAG_NAME = 'BODY';
-
 class RequestRouter {
   // Client-side router
   constructor ($serviceLocator) {
@@ -18,7 +12,6 @@ class RequestRouter {
     this._documentRenderer = $serviceLocator.resolve('documentRenderer');
     this._referrer = '';
     this._isStateInitialized = false;
-    this._isSilentHistoryChanging = false;
 
     this._isHistorySupported = this._window.history && this._window.history.pushState instanceof Function;
 
@@ -30,9 +23,7 @@ class RequestRouter {
   }
 
   // Routes browser render request.
-  route (options) {
-    options = options || {};
-
+  route () {
     // because now location was not change yet and
     // different browsers handle `popstate` differently
     // we need to do route in next iteration of event loop
@@ -43,7 +34,6 @@ class RequestRouter {
         var currentAuthority = this._location.authority ? this._location.authority.toString() : null;
 
         if (newLocation.scheme !== this._location.scheme || newAuthority !== currentAuthority) {
-          this._isSilentHistoryChanging = false;
           return Promise.resolve();
         }
 
@@ -53,18 +43,15 @@ class RequestRouter {
 
         if (newLocation.path === this._location.path && newQuery === currentQuery) {
           this._location = newLocation;
-          this._isSilentHistoryChanging = false;
           return Promise.resolve();
         }
 
-        return this._changeState(newLocation, options);
+        return this._changeState(newLocation);
       });
   }
 
   // Sets application state to specified URI.
-  go (locationString, options) {
-    options = options || {};
-
+  go (locationString) {
     return Promise.resolve()
       .then(() => {
         var location = new URI(locationString);
@@ -91,14 +78,12 @@ class RequestRouter {
         }
 
         this._window.history.pushState({}, '', locationString);
-        return this.route(options);
+        return this.route();
       });
   }
 
   // Changes current application state with new location.
-  _changeState (newLocation, options) {
-    options = options || {};
-
+  _changeState (newLocation) {
     return Promise.resolve()
       .then(() => {
         this._location = newLocation;
@@ -122,7 +107,7 @@ class RequestRouter {
           return Promise.resolve();
         }
 
-        return this._documentRenderer.updateState(routingContext, options);
+        return this._documentRenderer.updateState(routingContext);
       })
       .then(() => {
         this._referrer = this._location;
@@ -139,62 +124,12 @@ class RequestRouter {
       this.route()
         .catch(this._handleError.bind(this));
     });
-
-    this._window.document.body.addEventListener('click', event => {
-      if (event.defaultPrevented) {
-        return;
-      }
-
-      if (event.target.tagName === A_TAG_NAME) {
-        this._linkClickHandler(event, event.target);
-      } else {
-        var link = closestLink(event.target);
-        if (!link) {
-          return;
-        }
-        this._linkClickHandler(event, link);
-      }
-    });
-  }
-
-  // Handles link click on the page.
-  _linkClickHandler (event, element) {
-    var targetAttribute = element.getAttribute(TARGET_ATTRIBUTE_NAME);
-    if (targetAttribute) {
-      return;
-    }
-
-    // if middle mouse button was clicked
-    if (event.button !== MOUSE_PRIMARY_KEY ||
-      event.ctrlKey || event.altKey || event.shiftKey) {
-      return;
-    }
-
-    var locationString = element.getAttribute(HREF_ATTRIBUTE_NAME);
-    if (!locationString) {
-      return;
-    }
-    if (locationString[0] === '#') {
-      return;
-    }
-
-    event.preventDefault();
-    this.go(locationString)
-      .catch(this._handleError.bind(this));
   }
 
   // Handles all errors.
   _handleError (error) {
     this._eventBus.emit('error', error);
   }
-}
-
-// Finds the closest ascending "A" element node.
-function closestLink (element) {
-  while (element && element.nodeName !== A_TAG_NAME && element.nodeName !== BODY_TAG_NAME) {
-    element = element.parentNode;
-  }
-  return element && element.nodeName === A_TAG_NAME ? element : null;
 }
 
 module.exports = RequestRouter;
