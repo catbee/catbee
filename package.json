@@ -34,7 +34,7 @@
   },
   "scripts": {
     "lint": "eslint lib/* browser/*",
-    "test": "lab"
+    "test": "lab -l"
   },
   "license": "MIT",
   "bugs": {

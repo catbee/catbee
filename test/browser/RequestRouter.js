@@ -41,28 +41,99 @@ lab.experiment('browser/RequestRouter', () => {
       done();
     });
 
-    lab.test('If location not changed, document will not update state', (done) => {
+    lab.test('If route to unmatched we must reload page', (done) => {
       var documentRenderer = locator.resolve('documentRenderer');
+      var eventBus = locator.resolve('eventBus');
 
       locator.registerInstance('routeDefinition', {
         expression: '/'
       });
 
+      eventBus.on('documentRendered', (context) => {
+        assert.deepEqual(context.args, {});
+      });
+
+
       jsdom.env({
         url: 'http://localhost',
-        html: 'Test',
+        html: '',
         done: (err, window) => {
           locator.registerInstance('window', window);
           var router = new RequestRouter(locator);
           router.go('/invalid');
 
+          window.location.assign = function (linkToGo) {
+            assert.strictEqual(linkToGo, 'http://localhost/invalid');
+          };
+
           wait(10)
             .then(() => {
-
+              assert(window.history.length, 1);
               done();
             });
         }
-      })
+      });
+    });
+
+    lab.test('If location changed, we must change state', (done) => {
+      var documentRenderer = locator.resolve('documentRenderer');
+      var eventBus = locator.resolve('eventBus');
+
+      locator.registerInstance('routeDefinition', {
+        expression: '/?some=:some'
+      });
+
+      eventBus.on('documentRendered', (context) => {
+        assert.deepEqual(context.args, {});
+      });
+
+      eventBus.on('stateUpdated', (context) => {
+        assert.deepEqual(context.args, { some: 'good' });
+      });
+
+      eventBus.on('error', done);
+
+      jsdom.env({
+        url: 'http://localhost',
+        html: '',
+        done: (err, window) => {
+          locator.registerInstance('window', window);
+          var router = new RequestRouter(locator);
+          router.go('/?some=good');
+
+          wait(10)
+            .then(() => {
+              assert(window.history.length, 2);
+              done();
+            });
+        }
+      });
+    });
+
+    lab.test('If scheme was changed, page will be reloaded', (done) => {
+      var documentRenderer = locator.resolve('documentRenderer');
+      var eventBus = locator.resolve('eventBus');
+
+      locator.registerInstance('routeDefinition', {
+        expression: '/'
+      });
+
+      eventBus.on('error', done);
+
+      jsdom.env({
+        url: 'http://localhost',
+        html: '',
+        done: (err, window) => {
+          locator.registerInstance('window', window);
+          var router = new RequestRouter(locator);
+          router.go('https://localhost');
+
+          window.location.assign = function (linkToGo) {
+            assert.strictEqual(linkToGo, 'https://localhost');
+            done();
+          }
+        }
+      });
     });
   });
 });
