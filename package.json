@@ -15,11 +15,11 @@
   ],
   "main": "./index",
   "browser": {
-    "./lib/Bootstrapper.js": "/browser/Bootstrapper.js",
+    "./lib/Bootstrapper.js": "./browser/Bootstrapper.js",
     "./lib/helpers/hrTimeHelper.js": "./browser/helpers/hrTimeHelper.js",
     "./lib/providers/ModuleApiProvider.js": "./browser/providers/ModuleApiProvider.js",
     "./lib/Catbee.js": "./browser/Catbee.js",
-    "./lib/RequestRouter.js": "./dist/browser/RequestRouter.js"
+    "./lib/RequestRouter.js": "./browser/RequestRouter.js"
   },
   "dependencies": {
     "browser-process-hrtime": "^0.1.2",
