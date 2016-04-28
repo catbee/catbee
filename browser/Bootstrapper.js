@@ -21,7 +21,6 @@ class Bootstrapper extends BootstrapperBase {
     locator.register('cookieWrapper', CookieWrapper, configObject, true);
     locator.registerInstance('window', window);
 
-    var logger = locator.resolve('logger');
     var eventBus = locator.resolve('eventBus');
 
     window.addEventListener('error', (error) => eventBus.emit('error', error));
