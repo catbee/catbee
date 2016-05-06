@@ -20,10 +20,6 @@ class Bootstrapper extends BootstrapperBase {
     locator.register('moduleApiProvider', ModuleApiProvider, configObject, true);
     locator.register('cookieWrapper', CookieWrapper, configObject, true);
     locator.registerInstance('window', window);
-
-    var eventBus = locator.resolve('eventBus');
-
-    window.addEventListener('error', (error) => eventBus.emit('error', error));
   }
 }
 
