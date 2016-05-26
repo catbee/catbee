@@ -3,108 +3,181 @@ Catbee [![Build Status](https://travis-ci.org/catbee/catbee.svg?branch=master)](
 
 <img src="https://raw.githubusercontent.com/markuplab/catbee-todomvc/master/logo.png" width="100" height="100" />
 
-High level isomorphic framework based on best practices from Catberry, Baobab and Cerebral.
+#### Working Draft. Will be translated to English later. Sorry for inconvenience.
 
-Catbee is [Catberry](https://github.com/catberry/catberry) small brother (read as fork). Unlike the Catberry, Catbee use "Single State Tree" conception.
-All state mutations run in signals, and powered by [AppState](https://github.com/markuplab/appstate) module.
+## Catbee
 
-#### Examples
-[Catbee TodoMVC](https://github.com/markuplab/catbee-todomvc)
+Catbee это фундамент для изморфных (универсальных) приложений.
+Библиотека решает основные проблемы с которыми встречается разработчик при написании изоморфного приложения.
 
-#### API changes between Catberry and Catbee
+## Motivation
 
-Main changes in Catbee affected to data flow architecture. All data focused in [Baobab tree](https://github.com/Yomguithereal/baobab), instead of distributed flux stores in Catberry. Tree contains full application state, and have 2 interfaces: modify API also known as "Signals", and read API also known as "Watchers". 
+Создание изморфоного приложения всегда являяется нетривиальной задачей. 
+Ключевые компоненты должны учитывать особенности каждого окружения.
+В этой библиотеке мы постарались собрать ключевые компоненты свойственные изоморфного приложения.
+Это работа с заголовками, печеньями, роутингом (History API в браузере и Middleware на сервере), редиректами.
 
-Signal is signular way to modify state tree. It's look like middleware, but more flexible and adopted for sync/async operations. You can read more about signals [here](http://cerebraljs.com) and [here](https://github.com/markuplab/appstate). Now, we recommend run signal on every user actions, when you need change application state, and also signal automaticly run on every url change. 
+Также Catbee предлагает унифицированную систему для работы с компонентами системы - Service Locator. 
+Она позволяет вам легко манипулировать с зависимостями между внутренними частями приложения, а также расширять
+приложение внешними пакетами.
 
-Signals use "composition" conception, and contains array of independant functions. It's very simple way to maintain big codebase.
+Помимо всех этих приемуществ, библиотека содержит единую шину сообщений EventBus, которая содержит все события 
+которые порождают компоненты.
 
-```js
-var signal = [
-  setLoading, // Sync function
-  [ // Here we run parallel functions
-    getUser, { // Async function with 2 outputs success and error
-      success: [setUser], // Run if we call output.success in getUser
-      error: [setUserError] // Run if we call output.error in getUser
-    },
-    getNews, { // It's function will run paraller with getUser, like Promise.all
-      loaded: [setNews],
-      error: [setNewsError]
-    }
-  ],
-  unsetLoading
-];
+## Getting Started
+
+Чтобы написать приложение на Catbee вам не потребуется много сил.
+Пример ниже демонстрирует код простого изоморфного приложения.
+
+Серверная часть приложения. 
+Здесь мы запускаем сервер на Express.js и перехватываем часть запросов с помощью middleware.
+Catbee не отвечает за слой представления, и он может быть произвольным.
+Задача библиотеки на сервере, обработать запрос и передать информацию о запросе прослойке представления, 
+чтобы она смогла сформировать html строку клиенту и отправить ее.
+
+``` javascript
+// server.js
+var express = require('express');
+var catbee = require('catbee');
+var components = require('catbee-web-components');
+var document = require('./components/document');
+
+var app = express();
+var cat = catbee.create();
+
+components.register(cat.locator, document);
+cat.registerRoute({ expression: '/' });
+
+app.use(cat.getMiddleware());
+
+app.listen(3000);
 ```
 
-Components can access data by [watchers](https://github.com/Yomguithereal/baobab#specialized-getters). We have 2 main reasons to use watchers. We need data context for template rendering, and also we need state update events to rerender component. You don't need bind watchers manually, it's inside Catbee. 
+Клиентская часть приложения. Она запускает приложение в браузере и отправляется прослойке представления
+сигнал о том что приложение должно быть инициализированно. Далее Catbee ожидает событий от History API и уведомляет
+слой представления о изменениях.
 
-```js
-// Here we use simple Baobab.watch API
-module.exports = {
-  news: ['news', 'data'],
-  isVisible: ['news', 'UIState', 'isVisible']
-};
+``` javascript
+// browser.js
+var catbee = require('catbee');
+var components = require('catbee-web-components');
+var document = require('./components/document');
 
-// You can also use Baobab.watch dynamicly
-module.exports = function (attributes) {
-  // Here attributes is <cat-component id="unique" cat-id="1" watcher= "dynamic"></cat-component>
-  var id = attributes['cat-id'];
+var cat = catbee.create();
+
+components.register(cat.locator, document);
+cat.registerRoute({ expression: '/' });
+
+cat.startWhenReady();
+```
+
+Пример изоморфного компонента которое будет использоваться как в браузере так и на клиенте.
+Библиотека не пропогандирует какого-то конкретного подхода по отрисовке HTML, но некоторые из них мы официально поддерживаем.
+В этом случае, используется библиотека Catbee Web Components. 
+Вы можете использовать любые библиотеки для отрисовки HTML'a (React, Vue, Angular, Deku ...), с одним лишь условием,
+код библиотеки должен уметь работать изоморфно.
+
+```
+// document.js
+class Document {
+  template (ctx) {
+    return `Hello ${ctx.name}!`;
+  }
   
-  return {
-    title: ['news', 'data', { id: id }, 'title']
-  };
+  render () {
+    return { name: 'world' }
+  }
+}
+
+module.exports = {
+  constructor: Document
 }
 ```
 
-#### Stores reworked to Watchers
-No more stores. Watchers binded to component like stores, by attribute `watcher`. Also you don't need run this.$context.changed, it's run automaticly. 
+## Installation
 
-```js
-this.$context.getStoreData -> this.$context.getWatcherData // -> Promise
+Установка основной библиотеки:
+
+```
+npm i catbee --save
 ```
 
-#### this.$context.sendAction() reworked to this.$context.signal()
-No more actions. All activity and logic centralized in signals. All signals load/reload/register automaticly by Catbee, you can look [example here](https://github.com/markuplab/catbee-todomvc/tree/master/signals).
+[Необязательно] Установка слоя преставления:
 
-#### New routing definition style
-```js
-module.exports = [
-  {
-    expression: '/news/:id', // id is dynamic arg
-    signal: 'newsRoute',
-    map: mapFn,
-    args: {
-      page: 'newsCard' // static args
-    }
+```
+npm i catbee-web-components --save
+```
+
+Вы можете выбрать любой слой представления или написать свой.
+
+## API Reference
+
+API библиотеки отличается от окружения в котором она используется.
+
+### Browser
+
+#### Instantiation
+
+Создает оболочку приложения. Принимает первым аргументом конфигурацию приложения.
+
+```
+var config = {
+  isRelease: true
+};
+
+var cat = catbee.create(config);
+```
+
+#### startWhenReady
+
+Запускает router и вызывает стартовый запуск приложения.
+
+#### registerRoute
+
+Регистрирует route который должен перехватываться приложением.
+
+```
+var cat = catbee.create();
+
+cat.registerRoute({
+  expression: '/:category/?id=:id',
+  args: {
+    type: 'news'  
   }
-];
+})
 ```
 
-#### New logger system
-Catbee use winston as server logger instead Log4js used in Catberry. Also we add special [YAML-like](https://github.com/eugeny-dementev/winston-console-formatter) console formatter.
+### Server
 
-#### this.$context.state
-State instance available in this.$context as read-only object.
+#### Instantiation
 
-### context.headers
-Request headers object. Available only on server side.
+Создает оболочку приложения. Принимает первым аргументом конфигурацию приложения.
 
-#### Silent redirects
-On every URL change, we run signal, sometime it's little overhead. You can change URL without signal execution.
-`this.$context.redirect('/some/url?filter=active', { silent: true });`
+```
+var config = {
+  isRelease: true
+};
 
-#### Browserify Plugins
-Catberry support browserify transforms, we also support pluggins.
+var cat = catbee.create(config);
+```
 
-Example here: https://github.com/markuplab/catbee-boilerplate/blob/master/services/browserify/cssmodules/index.js
+#### getMiddleware
 
-#### All other API fully compatible with Catberry
-http://catberry.org/documentation
+Возвращает middleware которая может быть использована как часть Express/Connect.
+Перехватывает GET запросы указанные в карте роутов.
 
-#### You can get more infomation here:
+#### registerRoute
 
-[Boilerplate](https://github.com/markuplab/catbee-boilerplate)
+Регистрирует route который должен перехватываться приложением.
 
-[Component Generator](https://github.com/markuplab/generator-catbee)
+```
+var cat = catbee.create();
 
-#### Big thanx to Denis Rechkunov, Catberry, Baobab and Cerebral contributors for cool projects.
+cat.registerRoute({
+  expression: '/:category/?id=:id',
+  args: {
+    type: 'news'  
+  }
+})
+```
+
