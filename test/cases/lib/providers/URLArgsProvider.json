@@ -1,5 +1,5 @@
 {
-  "getArgsAndSignalByUri": [
+  "getArgsByUri": [
     {
       "name": "should return null if URI is not routed",
       "routes": [
@@ -8,10 +8,7 @@
         }
       ],
       "uri": "/none",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": null
-      }
+      "expectedArgs": null
     },
     {
       "name": "should return null if URI is not a string",
@@ -21,10 +18,7 @@
         }
       ],
       "uri": null,
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": null
-      }
+      "expectedArgs": null
     },
     {
       "name": "should return null if URI is empty string",
@@ -34,10 +28,7 @@
         }
       ],
       "uri": "",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": null
-      }
+      "expectedArgs": null
     },
     {
       "name": "should return null if there are not routes",
@@ -45,10 +36,7 @@
 
       ],
       "uri": "/state/value/?a=1&b=2",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": null
-      }
+      "expectedArgs": null
     },
     {
       "name": "should return null if route is empty",
@@ -61,10 +49,7 @@
         }
       ],
       "uri": "/state/value/?a=1&b=2",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": null
-      }
+      "expectedArgs": null
     },
     {
       "name": "should return args object if URI is routed",
@@ -74,11 +59,8 @@
         }
       ],
       "uri": "/state/test",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg": "test"
-        }
+      "expectedArgs": {
+        "arg": "test"
       }
     },
     {
@@ -89,11 +71,8 @@
         }
       ],
       "uri": "/state?arg=test",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg": "test"
-        }
+      "expectedArgs": {
+        "arg": "test"
       }
     },
     {
@@ -104,12 +83,9 @@
         }
       ],
       "uri": "/state?arg1=test&arg2=test",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "test",
-          "arg2": "test"
-        }
+      "expectedArgs": {
+        "arg1": "test",
+        "arg2": "test"
       }
     },
     {
@@ -120,12 +96,9 @@
         }
       ],
       "uri": "/state/val1/val2?c=val3&d=val4",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2"
       }
     },
     {
@@ -140,13 +113,10 @@
         }
       ],
       "uri": "/state?arg1=test&arg2=test",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "overwritten",
-          "arg2": "test",
-          "arg3": "extended"
-        }
+      "expectedArgs": {
+        "arg1": "overwritten",
+        "arg2": "test",
+        "arg3": "extended"
       }
     },
     {
@@ -160,12 +130,9 @@
         }
       ],
       "uri": "/state/val1/val2?a=val3&b=val4",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2"
       }
     },
     {
@@ -179,14 +146,11 @@
         }
       ],
       "uri": "/state/val1/val2?a=val3&b=val4",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2",
-          "arg3": "val3",
-          "arg4": "val4"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": "val3",
+        "arg4": "val4"
       }
     },
     {
@@ -197,14 +161,11 @@
         }
       ],
       "uri": "/state/val1/val2?a=val3&b=val4&a=val5&a=val6",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2",
-          "arg3": ["val3","val5","val6"],
-          "arg4": "val4"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": ["val3","val5","val6"],
+        "arg4": "val4"
       }
     },
     {
@@ -215,13 +176,10 @@
         }
       ],
       "uri": "/state/val1/val2?a=val3&b=val4",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2",
-          "arg4": "val4"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg4": "val4"
       }
     },
     {
@@ -232,14 +190,11 @@
         }
       ],
       "uri": "/state/val1/val2?b=val4&a=val3",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2",
-          "arg3": "val3",
-          "arg4": "val4"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": "val3",
+        "arg4": "val4"
       }
     },
     {
@@ -250,12 +205,9 @@
         }
       ],
       "uri": "/state/val1/val2?",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2"
       }
     },
     {
@@ -266,14 +218,11 @@
         }
       ],
       "uri": "/state/val1/val2?a=&b=val4",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg2": "val2",
-          "arg3": "",
-          "arg4": "val4"
-        }
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg2": "val2",
+        "arg3": "",
+        "arg4": "val4"
       }
     },
     {
@@ -284,12 +233,9 @@
         }
       ],
       "uri": "/state?a=val3&b=val4",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg3": "val3",
-          "arg4": "val4"
-        }
+      "expectedArgs": {
+        "arg3": "val3",
+        "arg4": "val4"
       }
     },
     {
@@ -300,69 +246,10 @@
         }
       ],
       "uri": "/state/val1/val2?a=valX&b=val4",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-          "arg1": "val1",
-          "arg3": "valX",
-          "arg4": "val4"
-        }
-      }
-    },
-    {
-      "name": "should return signal name if it's defined in route and URI is routed",
-      "routes": [
-        {
-          "expression": "/",
-          "signal": "test"
-        }
-      ],
-      "uri": "/",
-      "expectedArgsAndSignal": {
-        "signal": "test",
-        "args": {}
-      }
-    },
-    {
-      "name": "should not return signal name if it's not defined in route and URI is routed",
-      "routes": [
-        {
-          "expression": "/"
-        }
-      ],
-      "uri": "/",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": {
-
-        }
-      }
-    },
-    {
-      "name": "should not return signal name if it's defined in route but URI is not routed",
-      "routes": [
-        {
-          "expression": "/state",
-          "signal": "test"
-        }
-      ],
-      "uri": "/",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": null
-      }
-    },
-    {
-      "name": "should not return signal name if it's not defined in route and URI is not routed",
-      "routes": [
-        {
-          "expression": "/state"
-        }
-      ],
-      "uri": "/",
-      "expectedArgsAndSignal": {
-        "signal": null,
-        "args": null
+      "expectedArgs": {
+        "arg1": "val1",
+        "arg3": "valX",
+        "arg4": "val4"
       }
     }
   ]

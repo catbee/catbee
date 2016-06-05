@@ -19,7 +19,7 @@ module.exports = {
    * @param {Array} hrTime High resolution time tuple.
    * @return {Number}
    */
-  toMilliseconds: hrTime => {
+  toMilliseconds: (hrTime) => {
     return hrTime[0] * 1e3 + Math.round(hrTime[1] / 1e6);
   }
 };

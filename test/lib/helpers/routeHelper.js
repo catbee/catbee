@@ -4,9 +4,9 @@ var assert = require('assert');
 var testCases = require('../../cases/lib/helpers/routeHelper.json');
 var routeHelper = require('../../../lib/helpers/routeHelper');
 
-lab.experiment('lib/helpers/routeHelper', function () {
-  lab.experiment('#removeEndSlash', function () {
-    testCases.removeEndSlash.forEach(function (testCase) {
+lab.experiment('lib/helpers/routeHelper', () => {
+  lab.experiment('#removeEndSlash', () => {
+    testCases.removeEndSlash.forEach((testCase) => {
       lab.test(testCase.name, function (done) {
         var result = routeHelper.removeEndSlash(testCase.uri);
         assert.strictEqual(result, testCase.expected);

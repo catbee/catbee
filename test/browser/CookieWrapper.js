@@ -7,47 +7,53 @@ var CookieWrapper = require('../../browser/CookieWrapper');
 lab.experiment('browser/CookieWrapper', function () {
   lab.experiment('#get', function () {
     lab.test('should return empty string if cookie string is null', function (done) {
-      var locator = createLocator(null),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator(null);
+      var cookieWrapper = new CookieWrapper(locator);
 
       assert.strictEqual(cookieWrapper.get('some'), '');
       done();
     });
+
     lab.test('should return empty string if cookie key is not a string', function (done) {
-      var locator = createLocator('some=value;'),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator(null);
+      var cookieWrapper = new CookieWrapper(locator);
+
       assert.strictEqual(cookieWrapper.get({}), '');
       done();
     });
+
     lab.test('should return value if cookie string is right', function (done) {
-      var locator = createLocator('some=value; some2=value2'),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator('some=value; some2=value2');
+      var cookieWrapper = new CookieWrapper(locator);
 
       assert.strictEqual(cookieWrapper.get('some'), 'value');
       assert.strictEqual(cookieWrapper.get('some2'), 'value2');
       done();
     });
+
     lab.test('should return empty string if cookie string is wrong', function (done) {
-      var locator = createLocator('fasdfa/gafg-sgafga'),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator('fasdfa/gafg-sgafga');
+      var cookieWrapper = new CookieWrapper(locator);
 
       assert.strictEqual(cookieWrapper.get('fasdfa/gafg-sgafga'), '');
       done();
     });
   });
+
   lab.experiment('#set', function () {
     lab.test('should set cookie by specified parameters', function (done) {
-      var locator = createLocator(null),
-        cookieWrapper = locator.resolveInstance(CookieWrapper),
-        expiration = new Date(),
-        window = locator.resolve('window'),
-        expected = 'some=value' +
-          '; Max-Age=100' +
-          '; Expires=' +
-          expiration.toUTCString() +
-          '; Path=/some' +
-          '; Domain=.new.domain' +
-          '; Secure; HttpOnly';
+      var locator = createLocator(null);
+      var cookieWrapper = new CookieWrapper(locator);
+      var expiration = new Date();
+      var window = locator.resolve('window');
+
+      var expected = 'some=value' +
+        '; Max-Age=100' +
+        '; Expires=' +
+        expiration.toUTCString() +
+        '; Path=/some' +
+        '; Domain=.new.domain' +
+        '; Secure; HttpOnly';
 
       cookieWrapper.set({
         key: 'some',
@@ -63,15 +69,16 @@ lab.experiment('browser/CookieWrapper', function () {
       assert.strictEqual(window.document.cookie, expected);
       done();
     });
+
     lab.test('should set default expire date by max age', function (done) {
-      var locator = createLocator(null),
-        cookieWrapper = locator.resolveInstance(CookieWrapper),
-        expiration = new Date(Date.now() + 3600000),
-        window = locator.resolve('window'),
-        expected = 'some=value' +
-          '; Max-Age=3600' +
-          '; Expires=' +
-          expiration.toUTCString();
+      var locator = createLocator(null);
+      var cookieWrapper = new CookieWrapper(locator);
+      var expiration = new Date(Date.now() + 3600000);
+      var window = locator.resolve('window');
+      var expected = 'some=value' +
+      '; Max-Age=3600' +
+      '; Expires=' +
+      expiration.toUTCString();
 
       cookieWrapper.set({
         key: 'some',
@@ -82,9 +89,10 @@ lab.experiment('browser/CookieWrapper', function () {
       assert.strictEqual(window.document.cookie, expected);
       done();
     });
+
     lab.test('should throw error if wrong key', function (done) {
-      var locator = createLocator(null),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator(null);
+      var cookieWrapper = new CookieWrapper(locator);
 
       assert.throws(function () {
         cookieWrapper.set({
@@ -93,9 +101,10 @@ lab.experiment('browser/CookieWrapper', function () {
       }, Error);
       done();
     });
+
     lab.test('should throw error if wrong value', function (done) {
-      var locator = createLocator(null),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator(null);
+      var cookieWrapper = new CookieWrapper(locator);
 
       assert.throws(function () {
         cookieWrapper.set({
@@ -106,10 +115,11 @@ lab.experiment('browser/CookieWrapper', function () {
       done();
     });
   });
+
   lab.experiment('#getCookieString', function () {
     lab.test('should return right cookie string', function (done) {
-      var locator = createLocator('some=value; some2=value2'),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator('some=value; some2=value2');
+      var cookieWrapper = new CookieWrapper(locator);
 
       assert.strictEqual(
         cookieWrapper.getCookieString(),
@@ -118,10 +128,11 @@ lab.experiment('browser/CookieWrapper', function () {
       done();
     });
   });
+
   lab.experiment('#getAll', function () {
     lab.test('should return right cookie string', function (done) {
-      var locator = createLocator('some=value; some2=value2'),
-        cookieWrapper = locator.resolveInstance(CookieWrapper);
+      var locator = createLocator('some=value; some2=value2');
+      var cookieWrapper = new CookieWrapper(locator);
 
       assert.deepEqual(
         cookieWrapper.getAll(), {

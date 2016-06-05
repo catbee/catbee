@@ -3,108 +3,154 @@ Catbee [![Build Status](https://travis-ci.org/catbee/catbee.svg?branch=master)](
 
 <img src="https://raw.githubusercontent.com/markuplab/catbee-todomvc/master/logo.png" width="100" height="100" />
 
-High level isomorphic framework based on best practices from Catberry, Baobab and Cerebral.
+## Catbee
 
-Catbee is [Catberry](https://github.com/catberry/catberry) small brother (read as fork). Unlike the Catberry, Catbee use "Single State Tree" conception.
-All state mutations run in signals, and powered by [AppState](https://github.com/markuplab/appstate) module.
+Catbee is basic for isomorphic (universal) applications. Library allows to work with SSR (Server Side Rendering) in NodeJS and supports a SPA (Signal Page Application) in your browser.
 
-#### Examples
-[Catbee TodoMVC](https://github.com/markuplab/catbee-todomvc)
+## Getting Started
 
-#### API changes between Catberry and Catbee
+To write the application on Catbee you don't need a lot of energy.
 
-Main changes in Catbee affected to data flow architecture. All data focused in [Baobab tree](https://github.com/Yomguithereal/baobab), instead of distributed flux stores in Catberry. Tree contains full application state, and have 2 interfaces: modify API also known as "Signals", and read API also known as "Watchers". 
+The example code below shows a simple isomorphic app.
 
-Signal is signular way to modify state tree. It's look like middleware, but more flexible and adopted for sync/async operations. You can read more about signals [here](http://cerebraljs.com) and [here](https://github.com/markuplab/appstate). Now, we recommend run signal on every user actions, when you need change application state, and also signal automaticly run on every url change. 
+#### Server application
+Code below, run the server on Express.js and intercept requests through the middleware.
+Library process request, create routing context and pass it to the view layer. 
+In this example, we use custom view layer based on W3C Web Components. 
+You can write own, or use one of official packages.
 
-Signals use "composition" conception, and contains array of independant functions. It's very simple way to maintain big codebase.
+``` javascript
+// server.js
+var express = require('express');
+var catbee = require('catbee');
+var components = require('catbee-web-components');
+var document = require('./components/document');
 
-```js
-var signal = [
-  setLoading, // Sync function
-  [ // Here we run parallel functions
-    getUser, { // Async function with 2 outputs success and error
-      success: [setUser], // Run if we call output.success in getUser
-      error: [setUserError] // Run if we call output.error in getUser
-    },
-    getNews, { // It's function will run paraller with getUser, like Promise.all
-      loaded: [setNews],
-      error: [setNewsError]
-    }
-  ],
-  unsetLoading
-];
+var app = express();
+var cat = catbee.create();
+
+components.register(cat.locator, document);
+cat.registerRoute({ expression: '/' });
+
+app.use(cat.getMiddleware());
+
+app.listen(3000);
 ```
 
-Components can access data by [watchers](https://github.com/Yomguithereal/baobab#specialized-getters). We have 2 main reasons to use watchers. We need data context for template rendering, and also we need state update events to rerender component. You don't need bind watchers manually, it's inside Catbee. 
+#### Client-side application
+Client-side application have 2 stages:
 
-```js
-// Here we use simple Baobab.watch API
-module.exports = {
-  news: ['news', 'data'],
-  isVisible: ['news', 'UIState', 'isVisible']
-};
+1. Initialization application stage.
+2. Update application state stage.
 
-// You can also use Baobab.watch dynamicly
-module.exports = function (attributes) {
-  // Here attributes is <cat-component id="unique" cat-id="1" watcher= "dynamic"></cat-component>
-  var id = attributes['cat-id'];
+At first stage, Catbee wrap History API and send to document renderer init command. 
+At second stage, Catbee wait History API events, and send to document renderer update command with new routing context.
+
+``` javascript
+// browser.js
+var catbee = require('catbee');
+var components = require('catbee-web-components');
+var document = require('./components/document');
+
+var cat = catbee.create();
+
+components.register(cat.locator, document);
+cat.registerRoute({ expression: '/' });
+
+cat.startWhenReady();
+```
+
+#### Example of isomorphic component
+In this examples, was used [Catbee Web Components](https://github.com/catbee/catbee-web-components) package as document renderer implementation. Catbee is not promoting any particular approach to rendering HTML, but some of them are officially supported. You can use any library for rendering HTML'a (React, Vue, Angular, Deku ...), with only one condition, library code must be able to work isomorphically.
+
+```
+// document.js
+class Document {
+  template (ctx) {
+    return `Hello ${ctx.name}!`;
+  }
   
-  return {
-    title: ['news', 'data', { id: id }, 'title']
-  };
+  render () {
+    return { name: 'world' }
+  }
+}
+
+module.exports = {
+  constructor: Document
 }
 ```
 
-#### Stores reworked to Watchers
-No more stores. Watchers binded to component like stores, by attribute `watcher`. Also you don't need run this.$context.changed, it's run automaticly. 
+## Installation
 
-```js
-this.$context.getStoreData -> this.$context.getWatcherData // -> Promise
+Install core package:
+
+```
+npm i catbee --save
 ```
 
-#### this.$context.sendAction() reworked to this.$context.signal()
-No more actions. All activity and logic centralized in signals. All signals load/reload/register automaticly by Catbee, you can look [example here](https://github.com/markuplab/catbee-todomvc/tree/master/signals).
+Install document rednerer package:
 
-#### New routing definition style
-```js
-module.exports = [
-  {
-    expression: '/news/:id', // id is dynamic arg
-    signal: 'newsRoute',
-    map: mapFn,
-    args: {
-      page: 'newsCard' // static args
-    }
+```
+npm i catbee-web-components --save
+```
+
+## Document renderer packages
+
+##### [Catbee Web Components](https://github.com/catbee/catbee-web-components)
+Document Renderer implementaion based on Web Components, spiced by Appstate and Baobab for state management. 
+
+##### Catbee Vue (work in progress) 
+Document Renderer implementation based on Vue Next.
+
+## Routing
+
+Will be avaliable later. Sorry for inconvinience.
+
+## API Reference
+
+#### Instantiation
+
+Create instance of application. Accepts config object as first argument.
+
+```
+var config = {
+  isRelease: true
+};
+
+var cat = catbee.create(config);
+```
+
+#### registerRoute(definition)
+
+Register route inside application. 
+
+```
+var cat = catbee.create();
+
+cat.registerRoute({
+  expression: '/:category/?id=:id',
+  args: {
+    type: 'news'  
+  },
+  map: (args) => {
+    return args;
   }
-];
+})
 ```
+### Browser
+#### startWhenReady() 
 
-#### New logger system
-Catbee use winston as server logger instead Log4js used in Catberry. Also we add special [YAML-like](https://github.com/eugeny-dementev/winston-console-formatter) console formatter.
+Start application and wrap History API. 
+Return promise that resolve when document will be ready.
 
-#### this.$context.state
-State instance available in this.$context as read-only object.
+### Server
+#### getMiddleware()
 
-### context.headers
-Request headers object. Available only on server side.
+Return Express/Connect middleware.
 
-#### Silent redirects
-On every URL change, we run signal, sometime it's little overhead. You can change URL without signal execution.
-`this.$context.redirect('/some/url?filter=active', { silent: true });`
+## Wrtie your own renderer
 
-#### Browserify Plugins
-Catberry support browserify transforms, we also support pluggins.
+Will be avaliable later. Sorry for inconvinience.
 
-Example here: https://github.com/markuplab/catbee-boilerplate/blob/master/services/browserify/cssmodules/index.js
-
-#### All other API fully compatible with Catberry
-http://catberry.org/documentation
-
-#### You can get more infomation here:
-
-[Boilerplate](https://github.com/markuplab/catbee-boilerplate)
-
-[Component Generator](https://github.com/markuplab/generator-catbee)
-
-#### Big thanx to Denis Rechkunov, Catberry, Baobab and Cerebral contributors for cool projects.
+## Contributors
+Most of code taken from [Catberry](https://github.com/catberry/catberry) isomorphic framework. Thanks [Denis Rechkunov](https://github.com/pragmadash) and all Catberry contributors.

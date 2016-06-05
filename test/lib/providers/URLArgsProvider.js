@@ -7,15 +7,15 @@ var events = require('events');
 var URI = require('catberry-uri').URI;
 var testCases = require('../../cases/lib/providers/URLArgsProvider.json');
 
-lab.experiment('lib/providers/URLArgsProvider', function () {
-  lab.experiment('#getArgsAndSignalByUri', function () {
-    testCases.getArgsAndSignalByUri.forEach(function (testCase) {
-      lab.test(testCase.name, function (done) {
+lab.experiment('lib/providers/URLArgsProvider', () => {
+  lab.experiment('#getArgsByUri', () => {
+    testCases.getArgsByUri.forEach((testCase) => {
+      lab.test(testCase.name, (done) => {
         var locator = createLocator(testCase.routes);
-        var provider = locator.resolveInstance(URLArgsProvider);
+        var provider = new URLArgsProvider(locator);
         var uri = new URI(testCase.uri);
-        var argsAndSignal = provider.getArgsAndSignalByUri(uri);
-        assert.deepEqual(argsAndSignal, testCase.expectedArgsAndSignal);
+        var args = provider.getArgsByUri(uri);
+        assert.deepEqual(args, testCase.expectedArgs);
         done();
       });
     });
@@ -24,22 +24,18 @@ lab.experiment('lib/providers/URLArgsProvider', function () {
       var locator = createLocator([
         {
           expression: '/',
-          signal: 'Hello',
-          map: function ({ signal, args }) {
-            signal = 'test';
-            return { signal, args };
+          map: function (args) {
+            args.x = 1;
+            return args;
           }
         }
       ]);
 
-      var provider = locator.resolveInstance(URLArgsProvider);
+      var provider = new URLArgsProvider(locator);
       var uri = new URI('/');
 
-      var argsAndSignal = provider.getArgsAndSignalByUri(uri);
-      assert.deepEqual(argsAndSignal, {
-        args: {},
-        signal: 'test'
-      });
+      var args = provider.getArgsByUri(uri);
+      assert.deepEqual(args, { x: 1 });
       done();
     });
   });

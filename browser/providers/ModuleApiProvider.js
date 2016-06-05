@@ -1,16 +1,17 @@
+'use strict';
+
 var propertyHelper = require('../../lib/helpers/propertyHelper');
 var ModuleApiProviderBase = require('../../lib/base/ModuleApiProviderBase');
 
 class ModuleApiProvider extends ModuleApiProviderBase {
   /**
    * Creates new instance of the module API provider.
-   * @param {ServiceLocator} $serviceLocator Service locator
-   * to resolve dependencies.
+   * @param {ServiceLocator} locator Service locator to resolve dependencies.
    * @constructor
    * @extends ModuleApiProviderBase
    */
-  constructor ($serviceLocator) {
-    super($serviceLocator);
+  constructor (locator) {
+    super(locator);
 
     propertyHelper.defineReadOnly(this, 'isBrowser', true);
     propertyHelper.defineReadOnly(this, 'isServer', false);

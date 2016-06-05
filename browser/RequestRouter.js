@@ -1,25 +1,82 @@
-var URI = require('catberry-uri').URI;
+'use strict';
 
-const MOUSE_PRIMARY_KEY = 0;
-const HREF_ATTRIBUTE_NAME = 'href';
-const TARGET_ATTRIBUTE_NAME = 'target';
-const A_TAG_NAME = 'A';
-const BODY_TAG_NAME = 'BODY';
+const URI = require('catberry-uri').URI;
+
+const ERROR_DOCUMENT_RENDERER = 'Document renderer must be register in service locator.';
 
 class RequestRouter {
   /**
    * Client-side router
-   * @param {ServiceLocator} $serviceLocator
+   * @param {ServiceLocator} locator
    */
-  constructor ($serviceLocator) {
-    this._eventBus = $serviceLocator.resolve('eventBus');
-    this._window = $serviceLocator.resolve('window');
-    this._urlArgsProvider = $serviceLocator.resolve('urlArgsProvider');
-    this._contextFactory = $serviceLocator.resolve('contextFactory');
-    this._documentRenderer = $serviceLocator.resolve('documentRenderer');
+  constructor (locator) {
+    /**
+     * Current event bus.
+     * @type {EventEmitter}
+     * @private
+     */
+    this._eventBus = locator.resolve('eventBus');
 
-    this._isHistorySupported = this._window.history &&
-      this._window.history.pushState instanceof Function;
+    /**
+     * Current browser window.
+     * @type {Window}
+     * @private
+     */
+    this._window = locator.resolve('window');
+
+    /**
+     * Current URL args provider.
+     * @type {URLArgsProvider}
+     * @private
+     */
+    this._urlArgsProvider = locator.resolve('urlArgsProvider');
+
+    /**
+     * Current context factory.
+     * @type {ContextFactory}
+     * @private
+     */
+    this._contextFactory = locator.resolve('contextFactory');
+
+    /**
+     * Current location.
+     * @type {URI}
+     * @private
+     */
+    this._location = null;
+
+    /**
+     * Current referrer.
+     * @type {String|URI}
+     * @private
+     */
+    this._referrer = '';
+
+    /**
+     * Current initialization flag.
+     * @type {boolean}
+     * @private
+     */
+    this._isStateInitialized = false;
+
+    /**
+     * True if current browser supports history API.
+     * @type {boolean}
+     * @private
+     */
+    this._isHistorySupported = this._window.history && this._window.history.pushState instanceof Function;
+
+    /**
+     * Current document renderer.
+     * @type {DocumentRenderer}
+     * @private
+     */
+    try {
+      this._documentRenderer = locator.resolve('documentRenderer');
+    } catch (e) {
+      this._eventBus.emit('error', new Error(ERROR_DOCUMENT_RENDERER));
+      return;
+    }
 
     // add event handlers
     this._wrapDocument();
@@ -29,75 +86,10 @@ class RequestRouter {
   }
 
   /**
-   * Current initialization flag.
-   * @type {boolean}
-   * @private
+   * Route to current URL state
+   * @return {Promise}
    */
-  _isStateInitialized = false;
-
-  /**
-   * Current referrer.
-   * @type {String|URI}
-   * @private
-   */
-  _referrer = '';
-
-  /**
-   * Current location.
-   * @type {URI}
-   * @private
-   */
-  _location = null;
-
-  /**
-   * Current event bus.
-   * @type {EventEmitter}
-   * @private
-   */
-  _eventBus = null;
-
-  /**
-   * Current context factory.
-   * @type {ContextFactory}
-   * @private
-   */
-  _contextFactory = null;
-
-  /**
-   * Current state provider.
-   * @type {URLArgsProvider}
-   * @private
-   */
-  _urlArgsProvider = null;
-
-  /**
-   * Current document renderer.
-   * @type {DocumentRenderer}
-   * @private
-   */
-  _documentRenderer = null;
-
-  /**
-   * Current browser window.
-   * @type {Window}
-   * @private
-   */
-  _window = null;
-
-  /**
-   * True if current browser supports history API.
-   * @type {boolean}
-   * @private
-   */
-  _isHistorySupported = false;
-
-  /**
-   * Routes browser render request.
-   * @param {Object} [options={}]
-   * @param {boolean} options.silent
-   * @returns {Promise} Promise for nothing.
-   */
-  route (options = {}) {
+  route () {
     // because now location was not change yet and
     // different browsers handle `popstate` differently
     // we need to do route in next iteration of event loop
@@ -108,7 +100,6 @@ class RequestRouter {
         var currentAuthority = this._location.authority ? this._location.authority.toString() : null;
 
         if (newLocation.scheme !== this._location.scheme || newAuthority !== currentAuthority) {
-          this._isSilentHistoryChanging = false;
           return Promise.resolve();
         }
 
@@ -118,22 +109,19 @@ class RequestRouter {
 
         if (newLocation.path === this._location.path && newQuery === currentQuery) {
           this._location = newLocation;
-          this._isSilentHistoryChanging = false;
           return Promise.resolve();
         }
 
-        return this._changeState(newLocation, options);
+        return this._changeState(newLocation);
       });
   }
 
   /**
    * Sets application state to specified URI.
    * @param {string} locationString URI to go.
-   * @param {Object} [options={}]
-   * @param {boolean} options.silent routing without run signal related to URI
    * @returns {Promise} Promise for nothing.
    */
-  go (locationString, options = {}) {
+  go (locationString) {
     return Promise.resolve()
       .then(() => {
         var location = new URI(locationString);
@@ -152,33 +140,32 @@ class RequestRouter {
           return Promise.resolve();
         }
 
-        var { args, signal } = this._urlArgsProvider.getArgsAndSignalByUri(location);
+        var args = this._urlArgsProvider.getArgsByUri(location);
 
-        if (!args || !signal) {
+        if (!args) {
           this._window.location.assign(locationString);
           return Promise.resolve();
         }
 
         this._window.history.pushState({}, '', locationString);
-        return this.route(options);
+        return this.route();
       });
   }
 
   /**
-   * Changes current application state with new location.
-   * @param {URI} newLocation New location.
-   * @param {Object} [options={}]
-   * @param {boolean} options.silent
+   * Changes the current application state with the new location.
+   * @param {Object} newLocation New location
    * @returns {Promise} Promise for nothing.
    * @private
    */
-  _changeState (newLocation, options = {}) {
+  _changeState (newLocation) {
     return Promise.resolve()
       .then(() => {
         this._location = newLocation;
-        var { args, signal } = this._urlArgsProvider.getArgsAndSignalByUri(newLocation);
+        var args = this._urlArgsProvider.getArgsByUri(newLocation);
 
         var routingContext = this._contextFactory.create({
+          args,
           headers: null,
           referrer: this._referrer || this._window.document.referrer,
           location: this._location,
@@ -187,15 +174,15 @@ class RequestRouter {
 
         if (!this._isStateInitialized) {
           this._isStateInitialized = true;
-          return this._documentRenderer.initWithState({ args, signal }, routingContext);
+          return this._documentRenderer.initWithState(routingContext);
         }
 
-        if (!args || !signal) {
+        if (!args) {
           window.location.reload();
           return Promise.resolve();
         }
 
-        return this._documentRenderer.updateState({ args, signal }, routingContext, options);
+        return this._documentRenderer.updateState(routingContext);
       })
       .then(() => {
         this._referrer = this._location;
@@ -203,7 +190,7 @@ class RequestRouter {
   }
 
   /**
-   * Wraps document with required events to route requests.
+   * Wraps the document with required events to route requests.
    * @private
    */
   _wrapDocument () {
@@ -215,53 +202,6 @@ class RequestRouter {
       this.route()
         .catch(this._handleError.bind(this));
     });
-
-    this._window.document.body.addEventListener('click', event => {
-      if (event.defaultPrevented) {
-        return;
-      }
-
-      if (event.target.tagName === A_TAG_NAME) {
-        this._linkClickHandler(event, event.target);
-      } else {
-        var link = closestLink(event.target);
-        if (!link) {
-          return;
-        }
-        this._linkClickHandler(event, link);
-      }
-    });
-  }
-
-  /**
-   * Handles link click on the page.
-   * @param {Event} event Event-related object.
-   * @param {Element} element Link element.
-   * @private
-   */
-  _linkClickHandler (event, element) {
-    var targetAttribute = element.getAttribute(TARGET_ATTRIBUTE_NAME);
-    if (targetAttribute) {
-      return;
-    }
-
-    // if middle mouse button was clicked
-    if (event.button !== MOUSE_PRIMARY_KEY ||
-      event.ctrlKey || event.altKey || event.shiftKey) {
-      return;
-    }
-
-    var locationString = element.getAttribute(HREF_ATTRIBUTE_NAME);
-    if (!locationString) {
-      return;
-    }
-    if (locationString[0] === '#') {
-      return;
-    }
-
-    event.preventDefault();
-    this.go(locationString)
-      .catch(this._handleError.bind(this));
   }
 
   /**
@@ -272,18 +212,6 @@ class RequestRouter {
   _handleError (error) {
     this._eventBus.emit('error', error);
   }
-}
-
-/**
- * Finds the closest ascending "A" element node.
- * @param {Node} element DOM element.
- * @returns {Node|null} The closest "A" element or null.
- */
-function closestLink (element) {
-  while (element && element.nodeName !== A_TAG_NAME && element.nodeName !== BODY_TAG_NAME) {
-    element = element.parentNode;
-  }
-  return element && element.nodeName === A_TAG_NAME ? element : null;
 }
 
 module.exports = RequestRouter;

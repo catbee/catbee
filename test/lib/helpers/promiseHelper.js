@@ -1,7 +1,7 @@
 var Lab = require('lab');
 var lab = exports.lab = Lab.script();
 var assert = require('assert');
-var promiseHelper = require('../../../lib/promises/promiseHelper');
+var promiseHelper = require('../../../lib/helpers/promiseHelper');
 
 lab.experiment('lib/promises/promiseHelper', function () {
   lab.experiment('#callbackToPromise', function () {
@@ -11,6 +11,7 @@ lab.experiment('lib/promises/promiseHelper', function () {
           callback(null, 'hello');
         }, 10);
       };
+
       promiseHelper.callbackToPromise(some)()
         .then(function (value) {
           assert.strictEqual(value, 'hello');

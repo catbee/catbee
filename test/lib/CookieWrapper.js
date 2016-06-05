@@ -3,36 +3,40 @@ var lab = exports.lab = Lab.script();
 var assert = require('assert');
 var CookieWrapper = require('../../lib/CookieWrapper');
 
-lab.experiment('lib/CookieWrapper', function () {
-  lab.experiment('#get', function () {
-    lab.test('should return empty string if cookie string is null', function (done) {
+lab.experiment('lib/CookieWrapper', () => {
+  lab.experiment('#get', () => {
+    lab.test('should return empty string if cookie string is null', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.initWithString(null);
       assert.strictEqual(cookieWrapper.get('some'), '');
       done();
     });
-    lab.test('should return empty string if cookie key is not a string', function (done) {
+
+    lab.test('should return empty string if cookie key is not a string', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.initWithString('some=value;');
       assert.strictEqual(cookieWrapper.get({}), '');
       done();
     });
-    lab.test('should return value if cookie string is right', function (done) {
+
+    lab.test('should return value if cookie string is right', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.initWithString('some=value; some2=value2');
       assert.strictEqual(cookieWrapper.get('some'), 'value');
       assert.strictEqual(cookieWrapper.get('some2'), 'value2');
       done();
     });
-    lab.test('should return empty string if cookie string is wrong', function (done) {
+
+    lab.test('should return empty string if cookie string is wrong', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.initWithString('fasdfa/gafg-sgafga');
       assert.strictEqual(cookieWrapper.get('fasdfa/gafg-sgafga'), '');
       done();
     });
   });
-  lab.experiment('#set', function () {
-    lab.test('should set cookie by specified parameters', function (done) {
+
+  lab.experiment('#set', () => {
+    lab.test('should set cookie by specified parameters', (done) => {
       var cookieWrapper = new CookieWrapper(),
         expiration = new Date(),
         expected = 'some=value' +
@@ -60,7 +64,8 @@ lab.experiment('lib/CookieWrapper', function () {
       assert.strictEqual(cookieWrapper.setCookie[0], expected);
       done();
     });
-    lab.test('should set several cookies by specified parameters', function (done) {
+
+    lab.test('should set several cookies by specified parameters', (done) => {
       var cookieWrapper = new CookieWrapper(),
         expected1 = 'some=value',
         expected2 = 'some2=value2';
@@ -81,7 +86,8 @@ lab.experiment('lib/CookieWrapper', function () {
       assert.strictEqual(cookieWrapper.setCookie[1], expected2);
       done();
     });
-    lab.test('should set default expire date by max age', function (done) {
+
+    lab.test('should set default expire date by max age', (done) => {
       var cookieWrapper = new CookieWrapper(),
         expiration = new Date(Date.now() + 3600000),
         expected = 'some=value' +
@@ -99,7 +105,8 @@ lab.experiment('lib/CookieWrapper', function () {
       assert.strictEqual(cookieWrapper.setCookie[0], expected);
       done();
     });
-    lab.test('should throw error if wrong key', function (done) {
+
+    lab.test('should throw error if wrong key', (done) => {
       var cookieWrapper = new CookieWrapper();
 
       assert.throws(function () {
@@ -109,7 +116,8 @@ lab.experiment('lib/CookieWrapper', function () {
       }, Error);
       done();
     });
-    lab.test('should throw error if wrong value', function (done) {
+
+    lab.test('should throw error if wrong value', (done) => {
       var cookieWrapper = new CookieWrapper();
 
       assert.throws(function () {
@@ -121,8 +129,9 @@ lab.experiment('lib/CookieWrapper', function () {
       done();
     });
   });
-  lab.experiment('#getCookieString', function () {
-    lab.test('should return right cookie string with init', function (done) {
+
+  lab.experiment('#getCookieString', () => {
+    lab.test('should return right cookie string with init', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.initWithString('some=value; some2=value2');
       assert.strictEqual(
@@ -131,7 +140,8 @@ lab.experiment('lib/CookieWrapper', function () {
       );
       done();
     });
-    lab.test('should return right cookie string without init but with set', function (done) {
+
+    lab.test('should return right cookie string without init but with set', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.set({
         key: 'some3',
@@ -147,7 +157,8 @@ lab.experiment('lib/CookieWrapper', function () {
       );
       done();
     });
-    lab.test('should return right cookie string after init and set', function (done) {
+
+    lab.test('should return right cookie string after init and set', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.initWithString('some=value; some2=value2');
       cookieWrapper.set({
@@ -165,8 +176,9 @@ lab.experiment('lib/CookieWrapper', function () {
       done();
     });
   });
-  lab.experiment('#getAll', function () {
-    lab.test('should return right cookie string', function (done) {
+
+  lab.experiment('#getAll', () => {
+    lab.test('should return right cookie string', (done) => {
       var cookieWrapper = new CookieWrapper();
       cookieWrapper.initWithString('some=value; some2=value2');
       assert.deepEqual(
