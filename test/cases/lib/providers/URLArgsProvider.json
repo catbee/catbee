@@ -36,7 +36,7 @@
 
       ],
       "uri": "/state/value/?a=1&b=2",
-      "expectedArgs": {}
+      "expectedArgs": null
     },
     {
       "name": "should return null if route is empty",

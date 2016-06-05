@@ -1,19 +1,82 @@
 'use strict';
 
-var URI = require('catberry-uri').URI;
+const URI = require('catberry-uri').URI;
+
+const ERROR_DOCUMENT_RENDERER = 'Document renderer must be register in service locator.';
 
 class RequestRouter {
-  // Client-side router
+  /**
+   * Client-side router
+   * @param {ServiceLocator} $serviceLocator
+   */
   constructor ($serviceLocator) {
+    /**
+     * Current event bus.
+     * @type {EventEmitter}
+     * @private
+     */
     this._eventBus = $serviceLocator.resolve('eventBus');
+
+    /**
+     * Current browser window.
+     * @type {Window}
+     * @private
+     */
     this._window = $serviceLocator.resolve('window');
+
+    /**
+     * Current URL args provider.
+     * @type {URLArgsProvider}
+     * @private
+     */
     this._urlArgsProvider = $serviceLocator.resolve('urlArgsProvider');
+
+    /**
+     * Current context factory.
+     * @type {ContextFactory}
+     * @private
+     */
     this._contextFactory = $serviceLocator.resolve('contextFactory');
-    this._documentRenderer = $serviceLocator.resolve('documentRenderer');
+
+    /**
+     * Current location.
+     * @type {URI}
+     * @private
+     */
+    this._location = null;
+
+    /**
+     * Current referrer.
+     * @type {String|URI}
+     * @private
+     */
     this._referrer = '';
+
+    /**
+     * Current initialization flag.
+     * @type {boolean}
+     * @private
+     */
     this._isStateInitialized = false;
 
+    /**
+     * True if current browser supports history API.
+     * @type {boolean}
+     * @private
+     */
     this._isHistorySupported = this._window.history && this._window.history.pushState instanceof Function;
+
+    /**
+     * Current document renderer.
+     * @type {DocumentRenderer}
+     * @private
+     */
+    try {
+      this._documentRenderer = locator.resolve('documentRenderer');
+    } catch (e) {
+      this._eventBus.emit('error', new Error(ERROR_DOCUMENT_RENDERER));
+      return;
+    }
 
     // add event handlers
     this._wrapDocument();
@@ -22,7 +85,10 @@ class RequestRouter {
       .catch(reason => this._handleError(reason));
   }
 
-  // Routes browser render request.
+  /**
+   * Route to current URL state
+   * @return {Promise}
+   */
   route () {
     // because now location was not change yet and
     // different browsers handle `popstate` differently
@@ -50,7 +116,11 @@ class RequestRouter {
       });
   }
 
-  // Sets application state to specified URI.
+  /**
+   * Sets application state to specified URI.
+   * @param {string} locationString URI to go.
+   * @returns {Promise} Promise for nothing.
+   */
   go (locationString) {
     return Promise.resolve()
       .then(() => {
@@ -82,7 +152,12 @@ class RequestRouter {
       });
   }
 
-  // Changes current application state with new location.
+  /**
+   * Changes the current application state with the new location.
+   * @param {Object} newLocation New location
+   * @returns {Promise} Promise for nothing.
+   * @private
+   */
   _changeState (newLocation) {
     return Promise.resolve()
       .then(() => {
@@ -114,7 +189,10 @@ class RequestRouter {
       });
   }
 
-  // Wraps document with required events to route requests.
+  /**
+   * Wraps the document with required events to route requests.
+   * @private
+   */
   _wrapDocument () {
     if (!this._isHistorySupported) {
       return;
@@ -126,7 +204,11 @@ class RequestRouter {
     });
   }
 
-  // Handles all errors.
+  /**
+   * Handles all errors.
+   * @param {Error} error Error to handle.
+   * @private
+   */
   _handleError (error) {
     this._eventBus.emit('error', error);
   }
