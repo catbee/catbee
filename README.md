@@ -36,7 +36,7 @@ app.use(cat.getMiddleware());
 app.listen(3000);
 ```
 
-#### Client-side application.
+#### Client-side application
 Client-side application have 2 stages:
 
 1. Initialization application stage.
@@ -59,7 +59,7 @@ cat.registerRoute({ expression: '/' });
 cat.startWhenReady();
 ```
 
-#### Example of isomorphic component.
+#### Example of isomorphic component
 In this examples, was used [Catbee Web Components](https://github.com/catbee/catbee-web-components) package as document renderer implementation. Catbee is not promoting any particular approach to rendering HTML, but some of them are officially supported. You can use any library for rendering HTML'a (React, Vue, Angular, Deku ...), with only one condition, library code must be able to work isomorphically.
 
 ```
@@ -102,8 +102,6 @@ npm i catbee-web-components --save
 ## API Reference
 
 #### Instantiation
-
-`catbee.create(config)`
 
 Create instance of application. Accepts config object as first argument.
 
