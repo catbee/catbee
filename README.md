@@ -12,7 +12,7 @@ Catbee is basic for isomorphic (universal) applications. Library allows to work 
 To write the application on Catbee you don't need a lot of energy.
 The example code below shows a simple isomorphic app.
 
-___The server-side application.___
+#### The server-side application.
 Code below, run the server on Express.js and intercept requests through the middleware.
 Library process request, create routing context and pass it to the view layer. 
 In this example, we use custom view layer based on W3C Web Components. 
@@ -36,7 +36,7 @@ app.use(cat.getMiddleware());
 app.listen(3000);
 ```
 
-___Client-side application.___
+#### Client-side application.
 Client-side application have 2 stages:
 
 1. Initialization application stage.
@@ -59,7 +59,7 @@ cat.registerRoute({ expression: '/' });
 cat.startWhenReady();
 ```
 
-___Example of isomorphic component.___
+#### Example of isomorphic component.
 In this examples, was used [Catbee Web Components](https://github.com/catbee/catbee-web-components) package as document renderer implementation. Catbee is not promoting any particular approach to rendering HTML, but some of them are officially supported. You can use any library for rendering HTML'a (React, Vue, Angular, Deku ...), with only one condition, library code must be able to work isomorphically.
 
 ```
@@ -95,16 +95,15 @@ npm i catbee-web-components --save
 
 ## List of Document Renderers Packages
 
-___[OFFICIAL]___ [Catbee Web Components](https://github.com/catbee/catbee-web-components)
-__[WIP]___ Catbee Vue 
+[Catbee Web Components](https://github.com/catbee/catbee-web-components)
+
+[WIP] Catbee Vue 
 
 ## API Reference
 
-### Browser
-
 #### Instantiation
 
-___catbee.create(config)___
+`catbee.create(config)`
 
 Create instance of application. Accepts config object as first argument.
 
@@ -133,13 +132,14 @@ cat.registerRoute({
   }
 })
 ```
-
-#### startWhenReady() [Browser only]
+### Browser
+#### startWhenReady() 
 
 Start application and wrap History API. 
 Return promise that resolve when document will be ready.
 
-#### getMiddleware() [Server only]
+### Server
+#### getMiddleware()
 
 Return Express/Connect middleware.
 
