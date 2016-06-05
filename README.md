@@ -102,6 +102,10 @@ Document Renderer implementaion based on Web Components, spiced by Appstate and 
 ##### Catbee Vue (work in progress) 
 Document Renderer implementation based on Vue Next.
 
+## Routing
+
+Will be avaliable later. Sorry for inconvinience.
+
 ## API Reference
 
 #### Instantiation
@@ -143,6 +147,10 @@ Return promise that resolve when document will be ready.
 #### getMiddleware()
 
 Return Express/Connect middleware.
+
+## Wrtie your own renderer
+
+Will be avaliable later. Sorry for inconvinience.
 
 ## Contributors
 Most of code taken from [Catberry](https://github.com/catberry/catberry) isomorphic framework. Thanks [Denis Rechkunov](https://github.com/pragmadash) and all Catberry contributors.
