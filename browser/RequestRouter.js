@@ -7,36 +7,36 @@ const ERROR_DOCUMENT_RENDERER = 'Document renderer must be register in service l
 class RequestRouter {
   /**
    * Client-side router
-   * @param {ServiceLocator} $serviceLocator
+   * @param {ServiceLocator} locator
    */
-  constructor ($serviceLocator) {
+  constructor (locator) {
     /**
      * Current event bus.
      * @type {EventEmitter}
      * @private
      */
-    this._eventBus = $serviceLocator.resolve('eventBus');
+    this._eventBus = locator.resolve('eventBus');
 
     /**
      * Current browser window.
      * @type {Window}
      * @private
      */
-    this._window = $serviceLocator.resolve('window');
+    this._window = locator.resolve('window');
 
     /**
      * Current URL args provider.
      * @type {URLArgsProvider}
      * @private
      */
-    this._urlArgsProvider = $serviceLocator.resolve('urlArgsProvider');
+    this._urlArgsProvider = locator.resolve('urlArgsProvider');
 
     /**
      * Current context factory.
      * @type {ContextFactory}
      * @private
      */
-    this._contextFactory = $serviceLocator.resolve('contextFactory');
+    this._contextFactory = locator.resolve('contextFactory');
 
     /**
      * Current location.
