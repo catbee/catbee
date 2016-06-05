@@ -10,6 +10,7 @@ Catbee is basic for isomorphic (universal) applications. Library allows to work 
 ## Getting Started
 
 To write the application on Catbee you don't need a lot of energy.
+
 The example code below shows a simple isomorphic app.
 
 #### Server application
