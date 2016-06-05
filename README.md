@@ -94,11 +94,15 @@ Install document rednerer package:
 npm i catbee-web-components --save
 ```
 
-## List of Document Renderers Packages
+## Document renderer packages
 
 [Catbee Web Components](https://github.com/catbee/catbee-web-components)
 
-[WIP] Catbee Vue 
+Document Renderer implementaion based on Web Components, spiced by Appstate and Baobab for state management. 
+
+**Catbee Vue** (Work in progress) 
+
+Document Renderer implementation based on Vue Next.
 
 ## API Reference
 
