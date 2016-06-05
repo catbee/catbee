@@ -6,6 +6,7 @@ Catbee [![Build Status](https://travis-ci.org/catbee/catbee.svg?branch=master)](
 ## Catbee
 
 Catbee is basic for isomorphic (universal) applications.
+
 Library allows to work with SSR (Server Side Rendering) in NodeJS and supports a SPA (Signal Page Application) in your browser.
 
 ## Getting Started
