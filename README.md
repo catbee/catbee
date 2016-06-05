@@ -12,7 +12,7 @@ Catbee is basic for isomorphic (universal) applications. Library allows to work 
 To write the application on Catbee you don't need a lot of energy.
 The example code below shows a simple isomorphic app.
 
-#### The server-side application.
+#### The server application
 Code below, run the server on Express.js and intercept requests through the middleware.
 Library process request, create routing context and pass it to the view layer. 
 In this example, we use custom view layer based on W3C Web Components. 
