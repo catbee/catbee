@@ -3,37 +3,20 @@ Catbee [![Build Status](https://travis-ci.org/catbee/catbee.svg?branch=master)](
 
 <img src="https://raw.githubusercontent.com/markuplab/catbee-todomvc/master/logo.png" width="100" height="100" />
 
-#### Working Draft. Will be translated to English later. Sorry for inconvenience.
-
 ## Catbee
 
-Catbee это фундамент для изморфных (универсальных) приложений.
-Библиотека решает основные проблемы с которыми встречается разработчик при написании изоморфного приложения.
-
-## Motivation
-
-Создание изморфоного приложения всегда являяется нетривиальной задачей. 
-Ключевые компоненты должны учитывать особенности каждого окружения.
-В этой библиотеке мы постарались собрать ключевые компоненты свойственные изоморфного приложения.
-Это работа с заголовками, печеньями, роутингом (History API в браузере и Middleware на сервере), редиректами.
-
-Также Catbee предлагает унифицированную систему для работы с компонентами системы - Service Locator. 
-Она позволяет вам легко манипулировать с зависимостями между внутренними частями приложения, а также расширять
-приложение внешними пакетами.
-
-Помимо всех этих приемуществ, библиотека содержит единую шину сообщений EventBus, которая содержит все события 
-которые порождают компоненты.
+Catbee is basic for isomorphic (universal) applications. Library allows to work with SSR (Server Side Rendering) in NodeJS and supports a SPA (Signal Page Application) in your browser.
 
 ## Getting Started
 
-Чтобы написать приложение на Catbee вам не потребуется много сил.
-Пример ниже демонстрирует код простого изоморфного приложения.
+To write the application on Catbee you don't need a lot of energy.
+The example code below shows a simple isomorphic app.
 
-Серверная часть приложения. 
-Здесь мы запускаем сервер на Express.js и перехватываем часть запросов с помощью middleware.
-Catbee не отвечает за слой представления, и он может быть произвольным.
-Задача библиотеки на сервере, обработать запрос и передать информацию о запросе прослойке представления, 
-чтобы она смогла сформировать html строку клиенту и отправить ее.
+___The server-side application.___
+Code below, run the server on Express.js and intercept requests through the middleware.
+Library process request, create routing context and pass it to the view layer. 
+In this example, we use custom view layer based on W3C Web Components. 
+You can write own, or use one of official packages.
 
 ``` javascript
 // server.js
@@ -53,9 +36,14 @@ app.use(cat.getMiddleware());
 app.listen(3000);
 ```
 
-Клиентская часть приложения. Она запускает приложение в браузере и отправляется прослойке представления
-сигнал о том что приложение должно быть инициализированно. Далее Catbee ожидает событий от History API и уведомляет
-слой представления о изменениях.
+___Client-side application.___
+Client-side application have 2 stages:
+
+1. Initialization application stage.
+2. Update application state stage.
+
+At first stage, Catbee wrap History API and send to document renderer init command. 
+At second stage, Catbee wait History API events, and send to document renderer update command with new routing context.
 
 ``` javascript
 // browser.js
@@ -71,11 +59,8 @@ cat.registerRoute({ expression: '/' });
 cat.startWhenReady();
 ```
 
-Пример изоморфного компонента которое будет использоваться как в браузере так и на клиенте.
-Библиотека не пропогандирует какого-то конкретного подхода по отрисовке HTML, но некоторые из них мы официально поддерживаем.
-В этом случае, используется библиотека Catbee Web Components. 
-Вы можете использовать любые библиотеки для отрисовки HTML'a (React, Vue, Angular, Deku ...), с одним лишь условием,
-код библиотеки должен уметь работать изоморфно.
+___Example of isomorphic component.___
+In this examples, was used [Catbee Web Components](https://github.com/catbee/catbee-web-components) package as document renderer implementation. Catbee is not promoting any particular approach to rendering HTML, but some of them are officially supported. You can use any library for rendering HTML'a (React, Vue, Angular, Deku ...), with only one condition, library code must be able to work isomorphically.
 
 ```
 // document.js
@@ -96,29 +81,32 @@ module.exports = {
 
 ## Installation
 
-Установка основной библиотеки:
+Install core package:
 
 ```
 npm i catbee --save
 ```
 
-[Необязательно] Установка слоя преставления:
+Install document rednerer package:
 
 ```
 npm i catbee-web-components --save
 ```
 
-Вы можете выбрать любой слой представления или написать свой.
+## List of Document Renderers Packages
+
+___[OFFICIAL]___ [Catbee Web Components](https://github.com/catbee/catbee-web-components)
+__[WIP]___ Catbee Vue 
 
 ## API Reference
-
-API библиотеки отличается от окружения в котором она используется.
 
 ### Browser
 
 #### Instantiation
 
-Создает оболочку приложения. Принимает первым аргументом конфигурацию приложения.
+___catbee.create(config)___
+
+Create instance of application. Accepts config object as first argument.
 
 ```
 var config = {
@@ -128,13 +116,9 @@ var config = {
 var cat = catbee.create(config);
 ```
 
-#### startWhenReady
+#### registerRoute(definition)
 
-Запускает router и вызывает стартовый запуск приложения.
-
-#### registerRoute
-
-Регистрирует route который должен перехватываться приложением.
+Register route inside application. 
 
 ```
 var cat = catbee.create();
@@ -143,41 +127,21 @@ cat.registerRoute({
   expression: '/:category/?id=:id',
   args: {
     type: 'news'  
+  },
+  map: (args) => {
+    return args;
   }
 })
 ```
 
-### Server
+#### startWhenReady() [Browser only]
 
-#### Instantiation
+Start application and wrap History API. 
+Return promise that resolve when document will be ready.
 
-Создает оболочку приложения. Принимает первым аргументом конфигурацию приложения.
+#### getMiddleware() [Server only]
 
-```
-var config = {
-  isRelease: true
-};
+Return Express/Connect middleware.
 
-var cat = catbee.create(config);
-```
-
-#### getMiddleware
-
-Возвращает middleware которая может быть использована как часть Express/Connect.
-Перехватывает GET запросы указанные в карте роутов.
-
-#### registerRoute
-
-Регистрирует route который должен перехватываться приложением.
-
-```
-var cat = catbee.create();
-
-cat.registerRoute({
-  expression: '/:category/?id=:id',
-  args: {
-    type: 'news'  
-  }
-})
-```
-
+## Contributors
+Most of code taken from [Catberry](https://github.com/catberry/catberry) isomorphic framework. Thanks [Denis Rechkunov](https://github.com/pragmadash) and all Catberry contributors.
