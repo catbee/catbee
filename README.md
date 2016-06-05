@@ -96,12 +96,10 @@ npm i catbee-web-components --save
 
 ## Document renderer packages
 
-[Catbee Web Components](https://github.com/catbee/catbee-web-components)
-
+##### [Catbee Web Components](https://github.com/catbee/catbee-web-components)
 Document Renderer implementaion based on Web Components, spiced by Appstate and Baobab for state management. 
 
-**Catbee Vue** (Work in progress) 
-
+##### Catbee Vue (work in progress) 
 Document Renderer implementation based on Vue Next.
 
 ## API Reference
