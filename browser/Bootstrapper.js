@@ -25,8 +25,8 @@ class Bootstrapper extends BootstrapperBase {
   configure (configObject, locator) {
     super.configure(configObject, locator);
 
-    locator.register('moduleApiProvider', ModuleApiProvider, configObject, true);
-    locator.register('cookieWrapper', CookieWrapper, configObject, true);
+    locator.register('moduleApiProvider', ModuleApiProvider, true);
+    locator.register('cookieWrapper', CookieWrapper, true);
     locator.registerInstance('window', window);
   }
 }
