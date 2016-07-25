@@ -38,6 +38,25 @@ lab.experiment('lib/providers/URLArgsProvider', () => {
       assert.deepEqual(args, { x: 1 });
       done();
     });
+
+    lab.test('should match regex expression', function (done) {
+      var locator = createLocator([
+        {
+          expression: /^\/foo-\d+$/,
+          map: function (args) {
+            args.x = 1;
+            return args;
+          }
+        }
+      ]);
+
+      var provider = new URLArgsProvider(locator);
+      var uri = new URI('/foo-42');
+
+      var args = provider.getArgsByUri(uri);
+      assert.deepEqual(args, { x: 1 });
+      done();
+    });
   });
 });
 
