@@ -153,4 +153,4 @@ Return Express/Connect middleware.
 Will be avaliable later. Sorry for inconvinience.
 
 ## Contributors
-Most of code taken from [Catberry](https://github.com/catberry/catberry) isomorphic framework. Thanks [Denis Rechkunov](https://github.com/pragmadash) and all Catberry contributors.
+Most of code taken from [Catberry](https://github.com/catberry/catberry) isomorphic framework. Thanks [Denis Rechkunov](https://github.com/pragmader) and all Catberry contributors.
