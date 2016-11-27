@@ -63,7 +63,7 @@ cat.startWhenReady();
 #### Example of isomorphic component
 In this examples, was used [Catbee Web Components](https://github.com/catbee/catbee-web-components) package as document renderer implementation. Catbee is not promoting any particular approach to rendering HTML, but some of them are officially supported. You can use any library for rendering HTML'a (React, Vue, Angular, Deku ...), with only one condition, library code must be able to work isomorphically.
 
-```
+``` javascript
 // document.js
 class Document {
   template (ctx) {
@@ -112,7 +112,7 @@ Will be avaliable later. Sorry for inconvinience.
 
 Create instance of application. Accepts config object as first argument.
 
-```
+``` javascript
 var config = {
   isRelease: true
 };
@@ -124,7 +124,7 @@ var cat = catbee.create(config);
 
 Register route inside application. 
 
-```
+``` javascript
 var cat = catbee.create();
 
 cat.registerRoute({
